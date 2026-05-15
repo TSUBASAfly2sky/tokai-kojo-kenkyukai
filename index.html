@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>東海古城研究会</title>
+  <meta name="description" content="愛知・岐阜・三重・静岡の古城・城跡を調査・研究する会です。定期的な見学会・勉強会を開催しています。">
+  <meta property="og:title" content="東海古城研究会">
+  <meta property="og:description" content="東海地方の古城・城跡を調査・研究する会です。">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ====== ヘッダー ====== -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <svg class="logo-mark" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- 城のシルエットロゴ -->
+          <g fill="none" stroke="#1c3149" stroke-width="1.6" stroke-linejoin="round">
+            <path d="M10 50 L10 28 L18 28 L18 22 L24 22 L24 16 L30 10 L36 16 L36 22 L42 22 L42 28 L50 28 L50 50 Z" fill="#faf7ee"/>
+            <path d="M10 50 L50 50" stroke-width="2.2"/>
+            <path d="M14 28 L14 22 M22 22 L22 16 M30 14 L30 16 M38 22 L38 16 M46 28 L46 22"/>
+            <rect x="27" y="35" width="6" height="12" fill="#1c3149" stroke="none"/>
+          </g>
+          <circle cx="30" cy="10" r="2" fill="#b08545"/>
+        </svg>
+        <span class="logo-text">
+          <span class="ja">東海古城研究会</span>
+          <span class="en">TOKAI KOJO KENKYUKAI</span>
+        </span>
+      </a>
+
+      <button class="nav-toggle" aria-label="メニュー" id="navToggle">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav class="site-nav" id="siteNav">
+        <ul>
+          <li><a href="index.html">ホーム</a></li>
+          <li><a href="index.html#about">会の概要</a></li>
+          <li><a href="index.html#news">お知らせ</a></li>
+          <li><a href="report.html">活動報告</a></li>
+          <li><a href="index.html#contact">お問い合わせ</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ====== ヒーロー ====== -->
+  <section class="hero fade-in">
+    <div class="hero-inner">
+      <div class="hero-text">
+        <div class="hero-tag">— 東海の歴史を、城から学ぶ —</div>
+        <h1 class="hero-title">
+          <span class="accent">東海</span>古城<br>研究会
+        </h1>
+        <p class="hero-subtitle">
+          愛知・岐阜・三重・静岡の古城・城跡を<br>
+          調査・研究する会です。<br>
+          定期的な見学会・勉強会を通じて、<br>
+          地域の歴史文化を探求しています。
+        </p>
+        <div class="hero-cta">
+          <a href="#news" class="btn btn-primary">
+            最新のお知らせ <span class="arrow">→</span>
+          </a>
+          <a href="report.html" class="btn btn-outline">
+            活動報告を見る <span class="arrow">→</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="hero-art" aria-hidden="true">
+        <!-- 城の俯瞰イラスト -->
+        <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#f5efe1"/>
+              <stop offset="100%" stop-color="#ede4cc"/>
+            </linearGradient>
+            <linearGradient id="castleGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#2a4666"/>
+              <stop offset="100%" stop-color="#1c3149"/>
+            </linearGradient>
+          </defs>
+
+          <!-- 背景円（朱印風） -->
+          <circle cx="200" cy="200" r="180" fill="url(#skyGrad)" stroke="#9b3838" stroke-width="2" stroke-dasharray="3 4" opacity="0.7"/>
+
+          <!-- 雲（霞） -->
+          <path d="M50 260 Q90 250 130 260 T220 258 T320 265" stroke="#b08545" stroke-width="1.2" fill="none" opacity="0.5"/>
+          <path d="M80 280 Q120 272 160 280 T250 280" stroke="#b08545" stroke-width="1.2" fill="none" opacity="0.4"/>
+
+          <!-- 山 -->
+          <path d="M40 320 L140 220 L200 270 L260 200 L370 320 Z" fill="#1c3149" opacity="0.18"/>
+
+          <!-- 城（天守閣） -->
+          <g transform="translate(150, 130)">
+            <!-- 石垣 -->
+            <path d="M-30 180 L130 180 L120 150 L-20 150 Z" fill="#4a3c2e" opacity="0.85"/>
+            <path d="M-20 150 L120 150 L110 130 L-10 130 Z" fill="#4a3c2e"/>
+            <!-- 石垣のテクスチャ線 -->
+            <g stroke="#2a221b" stroke-width="0.5" opacity="0.6">
+              <line x1="-20" y1="165" x2="120" y2="165"/>
+              <line x1="0" y1="150" x2="0" y2="180"/>
+              <line x1="30" y1="150" x2="30" y2="180"/>
+              <line x1="60" y1="150" x2="60" y2="180"/>
+              <line x1="90" y1="150" x2="90" y2="180"/>
+            </g>
+
+            <!-- 1階 -->
+            <path d="M-5 130 L105 130 L100 90 L0 90 Z" fill="url(#castleGrad)"/>
+            <!-- 1階屋根 -->
+            <path d="M-15 90 L115 90 L110 80 L-10 80 Z" fill="#1c3149"/>
+            <path d="M-10 80 L110 80 Q105 70 50 68 Q-5 70 -10 80 Z" fill="#0f1e2e"/>
+
+            <!-- 2階 -->
+            <path d="M10 80 L90 80 L86 50 L14 50 Z" fill="url(#castleGrad)"/>
+            <!-- 2階屋根 -->
+            <path d="M0 50 L100 50 L96 42 L4 42 Z" fill="#1c3149"/>
+            <path d="M4 42 L96 42 Q92 32 50 30 Q8 32 4 42 Z" fill="#0f1e2e"/>
+
+            <!-- 3階（天守） -->
+            <path d="M22 42 L78 42 L75 20 L25 20 Z" fill="url(#castleGrad)"/>
+            <!-- 3階屋根 -->
+            <path d="M14 20 L86 20 L83 12 L17 12 Z" fill="#1c3149"/>
+            <path d="M17 12 L83 12 Q79 2 50 0 Q21 2 17 12 Z" fill="#0f1e2e"/>
+
+            <!-- 鯱（しゃちほこ） -->
+            <path d="M22 -5 Q24 -10 26 -8 L28 -2 L24 0 Z" fill="#b08545"/>
+            <path d="M78 -5 Q76 -10 74 -8 L72 -2 L76 0 Z" fill="#b08545"/>
+
+            <!-- 窓 -->
+            <rect x="12" y="58" width="8" height="14" fill="#f5efe1" opacity="0.85"/>
+            <rect x="40" y="58" width="8" height="14" fill="#f5efe1" opacity="0.85"/>
+            <rect x="52" y="58" width="8" height="14" fill="#f5efe1" opacity="0.85"/>
+            <rect x="80" y="58" width="8" height="14" fill="#f5efe1" opacity="0.85"/>
+
+            <rect x="30" y="26" width="8" height="12" fill="#f5efe1" opacity="0.85"/>
+            <rect x="62" y="26" width="8" height="12" fill="#f5efe1" opacity="0.85"/>
+
+            <!-- 1階の窓と扉 -->
+            <rect x="10" y="105" width="8" height="20" fill="#f5efe1" opacity="0.85"/>
+            <rect x="82" y="105" width="8" height="20" fill="#f5efe1" opacity="0.85"/>
+            <rect x="44" y="100" width="12" height="28" fill="#0f1e2e"/>
+            <rect x="46" y="100" width="8" height="28" fill="#b08545" opacity="0.6"/>
+          </g>
+
+          <!-- 朱印（落款風） -->
+          <g transform="translate(310, 320)">
+            <rect x="-20" y="-20" width="40" height="40" fill="#9b3838" rx="2"/>
+            <text x="0" y="-2" text-anchor="middle" font-family="serif" font-size="11" fill="#f5efe1" font-weight="700">古城</text>
+            <text x="0" y="13" text-anchor="middle" font-family="serif" font-size="11" fill="#f5efe1" font-weight="700">研究</text>
+          </g>
+
+          <!-- 縦書きの紀年 -->
+          <g transform="translate(50, 50)">
+            <text x="0" y="0" font-family="serif" font-size="10" fill="#b08545" letter-spacing="2">EST.</text>
+            <text x="0" y="14" font-family="serif" font-size="14" fill="#1c3149" font-weight="700" letter-spacing="2">1960</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== お知らせ ====== -->
+  <section class="section section-news" id="news">
+    <div class="section-inner">
+      <div class="section-head">
+        <div class="section-head-title">
+          <span class="en">INFORMATION</span>
+          <span class="ja">お知らせ</span>
+        </div>
+        <a href="report.html" class="section-head-link">活動報告一覧 →</a>
+      </div>
+      <p class="news-intro">近日中の見学会・イベント情報をお知らせします。</p>
+      <div class="news-list" id="newsList">
+        <div class="empty-state">読み込み中...</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== 会の概要 ====== -->
+  <section class="section section-about" id="about">
+    <div class="section-inner">
+      <div class="section-head">
+        <div class="section-head-title">
+          <span class="en">ABOUT US</span>
+          <span class="ja">会の概要</span>
+        </div>
+      </div>
+
+      <div class="about-grid">
+        <div class="about-text">
+          <p class="lead">
+            東海古城研究会は、愛知・岐阜・三重・静岡を中心とした<br>
+            東海地方の古城・城跡を調査・研究することを目的として設立された研究会です。
+          </p>
+          <p>
+            月1回程度の見学会や、年数回の勉強会等を通じて、会員相互の親睦を深めながら地域の歴史文化の研究に取り組んでいます。
+          </p>
+          <p>
+            城好き・歴史好きな方であれば、初心者からベテランまでどなたでも歓迎しております。お気軽にお問い合わせください。
+          </p>
+          <a href="#contact" class="btn btn-outline">
+            入会・お問い合わせ <span class="arrow">→</span>
+          </a>
+        </div>
+
+        <table class="info-table">
+          <tbody>
+            <tr><th>会の名称</th><td>東海古城研究会</td></tr>
+            <tr><th>設立</th><td>1960年</td></tr>
+            <tr><th>主な活動地域</th><td>愛知・岐阜・三重・静岡<br>（東海地方全域）</td></tr>
+            <tr><th>活動頻度</th><td>見学会：月1回程度<br>講演会・勉強会：年数回</td></tr>
+            <tr><th>会費</th><td>5,000円（未成年は半額）</td></tr>
+            <tr><th>会報</th><td>「城」年数回発行</td></tr>
+            <tr><th>お問い合わせ</th><td>下記フォームよりご連絡ください</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== 主な活動 ====== -->
+  <section class="section section-activity">
+    <div class="section-inner">
+      <div class="section-head">
+        <div class="section-head-title">
+          <span class="en">ACTIVITY</span>
+          <span class="ja">主な活動</span>
+        </div>
+      </div>
+
+      <div class="activity-grid">
+        <article class="activity-card">
+          <svg class="activity-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+            <path d="M8 40 L8 24 L14 24 L14 18 L20 18 L20 12 L24 8 L28 12 L28 18 L34 18 L34 24 L40 24 L40 40 Z"/>
+            <line x1="8" y1="40" x2="40" y2="40" stroke-width="2"/>
+            <rect x="22" y="30" width="4" height="10" fill="currentColor" stroke="none"/>
+          </svg>
+          <h3>見学会</h3>
+          <p>月1回程度、東海地方の古城・城跡を訪れます。専門家の解説を聞きながら、実際に城跡を歩いて調査します。</p>
+        </article>
+
+        <article class="activity-card">
+          <svg class="activity-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+            <path d="M10 12 L38 12 L38 38 L10 38 Z"/>
+            <line x1="14" y1="20" x2="34" y2="20"/>
+            <line x1="14" y1="26" x2="34" y2="26"/>
+            <line x1="14" y1="32" x2="28" y2="32"/>
+          </svg>
+          <h3>勉強会</h3>
+          <p>年数回、城郭研究の最新成果や地域史について学びます。会員による研究発表や外部講師を招いた講演会を行います。</p>
+        </article>
+
+        <article class="activity-card">
+          <svg class="activity-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+            <path d="M12 8 L36 8 L36 40 L12 40 Z"/>
+            <path d="M12 8 Q8 8 8 12 L8 40 L12 40"/>
+            <line x1="18" y1="18" x2="30" y2="18"/>
+            <line x1="18" y1="24" x2="30" y2="24"/>
+            <line x1="18" y1="30" x2="26" y2="30"/>
+          </svg>
+          <h3>会報「城」発行</h3>
+          <p>会報「城」を年数回発行。見学会の報告や会員の研究成果、城跡情報などを掲載しています。</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== 最近の活動報告 ====== -->
+  <section class="section section-recent-report">
+    <div class="section-inner">
+      <div class="section-head">
+        <div class="section-head-title">
+          <span class="en">RECENT REPORT</span>
+          <span class="ja">最近の活動報告</span>
+        </div>
+        <a href="report.html" class="section-head-link">活動報告一覧を見る →</a>
+      </div>
+
+      <div class="report-list" id="recentReportList">
+        <div class="empty-state">読み込み中...</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== お問い合わせ ====== -->
+  <section class="section section-contact" id="contact">
+    <div class="section-inner">
+      <div class="section-head">
+        <div class="section-head-title">
+          <span class="en">CONTACT</span>
+          <span class="ja">お問い合わせ・お申し込み</span>
+        </div>
+      </div>
+
+      <div class="contact-grid">
+        <div class="contact-info">
+          <h3>お問い合わせについて</h3>
+          <ul>
+            <li>見学会・勉強会への参加申し込みはこちらのフォームからお願いします。</li>
+            <li>入会のご相談・一般的なお問い合わせもお気軽にどうぞ。</li>
+            <li>フォームの内容は役員全員で共有しております。</li>
+            <li>返信はメールにて行います。数日以内に担当者よりご返信いたします。</li>
+          </ul>
+        </div>
+
+        <div class="contact-form-wrap">
+          <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSdv9U6BF75r1oWcRdBS3N-3Q_ptprey6gVxW3IBDNYQ6Gburg/viewform?embedded=true" width="640" height="1212" frameborder="0" marginheight="0" marginwidth="0">読み込んでいます…</iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== フッター ====== -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-col">
+        <h4>東海古城研究会</h4>
+        <p>東海地方の古城・城跡を調査・研究する会です。<br>活動地域：愛知・岐阜・三重・静岡</p>
+      </div>
+      <div class="footer-col">
+        <h4>サイトマップ</h4>
+        <ul>
+          <li><a href="index.html">ホーム</a></li>
+          <li><a href="index.html#about">会の概要</a></li>
+          <li><a href="index.html#news">お知らせ</a></li>
+          <li><a href="report.html">活動報告</a></li>
+          <li><a href="index.html#contact">お問い合わせ</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>更新・管理</h4>
+        <ul>
+          <li><a href="admin.html">管理画面</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      © 2026 TOKAI KOJO KENKYUKAI &nbsp;·&nbsp; ALL RIGHTS RESERVED
+    </div>
+  </footer>
+
+  <script src="js/data.js"></script>
+  <script>
+    // ハンバーガーメニュー
+    document.getElementById('navToggle').addEventListener('click', function() {
+      this.classList.toggle('active');
+      document.getElementById('siteNav').classList.toggle('open');
+    });
+
+    // データ読み込み&描画
+    document.addEventListener('DOMContentLoaded', function() {
+      TKK.renderNews('newsList', 5);
+      TKK.renderRecentReports('recentReportList', 4);
+    });
+  </script>
+</body>
+</html>
