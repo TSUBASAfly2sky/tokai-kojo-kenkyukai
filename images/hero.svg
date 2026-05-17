@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <!-- 空のグラデーション（夕景） -->
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"  stop-color="#3d2812"/>
+      <stop offset="40%" stop-color="#5c3d1e"/>
+      <stop offset="80%" stop-color="#8a5d2e"/>
+      <stop offset="100%" stop-color="#b07840"/>
+    </linearGradient>
+
+    <!-- 遠景の山 -->
+    <linearGradient id="mtnFar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#2c1d0e" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#1a1108" stop-opacity="0.95"/>
+    </linearGradient>
+
+    <!-- 中景の山 -->
+    <linearGradient id="mtnMid" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#1f1408"/>
+      <stop offset="100%" stop-color="#0d0805"/>
+    </linearGradient>
+
+    <!-- 城壁の質感 -->
+    <linearGradient id="castle" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"  stop-color="#1f1408"/>
+      <stop offset="100%" stop-color="#0a0503"/>
+    </linearGradient>
+
+    <!-- 太陽光彩 -->
+    <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"  stop-color="#f4d59a" stop-opacity="0.6"/>
+      <stop offset="50%" stop-color="#c89060" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- 霞 -->
+    <linearGradient id="mist" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"  stop-color="#c89060" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#c89060" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#c89060" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 空 -->
+  <rect width="1600" height="800" fill="url(#sky)"/>
+
+  <!-- 太陽光彩 -->
+  <circle cx="1180" cy="380" r="380" fill="url(#sun)"/>
+  <circle cx="1180" cy="380" r="80" fill="#f8e0a8" opacity="0.6"/>
+
+  <!-- 雲（横長） -->
+  <ellipse cx="400" cy="280" rx="280" ry="14" fill="#1a1108" opacity="0.3"/>
+  <ellipse cx="900" cy="320" rx="240" ry="10" fill="#1a1108" opacity="0.25"/>
+  <ellipse cx="1300" cy="240" rx="200" ry="8" fill="#1a1108" opacity="0.25"/>
+
+  <!-- 霞（中景の前） -->
+  <rect y="440" width="1600" height="100" fill="url(#mist)"/>
+
+  <!-- 遠景の山々（薄い） -->
+  <path d="M0 540 L120 460 L220 500 L340 420 L460 480 L580 430 L700 470 L860 410 L980 460 L1120 420 L1260 470 L1400 430 L1600 480 L1600 800 L0 800 Z" fill="url(#mtnFar)" opacity="0.7"/>
+
+  <!-- 中景の山（左） -->
+  <path d="M0 600 L180 480 L320 540 L460 460 L580 520 L700 490 L780 530 L820 540 L0 800 Z" fill="url(#mtnMid)"/>
+
+  <!-- 中景の山（右） -->
+  <path d="M1600 600 L1480 500 L1340 560 L1200 470 L1080 540 L980 510 L900 550 L850 560 L1600 800 Z" fill="url(#mtnMid)"/>
+
+  <!-- 中央の山（城の土台） -->
+  <path d="M620 600 L720 460 L820 410 L900 380 L980 410 L1060 460 L1140 600 Z" fill="url(#mtnMid)"/>
+
+  <!-- 城（中央、シルエット） -->
+  <g transform="translate(880, 280)">
+    <!-- 石垣 -->
+    <path d="M-90 200 L90 200 L80 160 L-80 160 Z" fill="url(#castle)"/>
+    <path d="M-80 160 L80 160 L70 130 L-70 130 Z" fill="url(#castle)"/>
+    <line x1="-70" y1="145" x2="70" y2="145" stroke="#3d2812" stroke-width="0.5" opacity="0.5"/>
+
+    <!-- 1階 -->
+    <path d="M-58 130 L58 130 L52 80 L-52 80 Z" fill="url(#castle)"/>
+    <!-- 1階屋根 -->
+    <path d="M-72 80 L72 80 L66 68 L-66 68 Z" fill="url(#castle)"/>
+    <path d="M-66 68 L66 68 Q60 56 0 53 Q-60 56 -66 68 Z" fill="#000"/>
+
+    <!-- 2階 -->
+    <path d="M-42 68 L42 68 L37 35 L-37 35 Z" fill="url(#castle)"/>
+    <!-- 2階屋根 -->
+    <path d="M-54 35 L54 35 L48 25 L-48 25 Z" fill="url(#castle)"/>
+    <path d="M-48 25 L48 25 Q42 13 0 10 Q-42 13 -48 25 Z" fill="#000"/>
+
+    <!-- 3階（天守） -->
+    <path d="M-28 25 L28 25 L24 -2 L-24 -2 Z" fill="url(#castle)"/>
+    <!-- 3階屋根 -->
+    <path d="M-36 -2 L36 -2 L32 -10 L-32 -10 Z" fill="url(#castle)"/>
+    <path d="M-32 -10 L32 -10 Q28 -22 0 -26 Q-28 -22 -32 -10 Z" fill="#000"/>
+
+    <!-- 鯱（しゃちほこ） -->
+    <path d="M-28 -28 L-26 -34 L-22 -32 L-24 -26 Z" fill="#a8884d" opacity="0.85"/>
+    <path d="M28 -28 L26 -34 L22 -32 L24 -26 Z" fill="#a8884d" opacity="0.85"/>
+
+    <!-- 窓の灯り（暖色） -->
+    <rect x="-46" y="100" width="6" height="14" fill="#f4d59a" opacity="0.65"/>
+    <rect x="-30" y="100" width="6" height="14" fill="#f4d59a" opacity="0.65"/>
+    <rect x="-14" y="100" width="6" height="14" fill="#f4d59a" opacity="0.55"/>
+    <rect x="8" y="100" width="6" height="14" fill="#f4d59a" opacity="0.65"/>
+    <rect x="24" y="100" width="6" height="14" fill="#f4d59a" opacity="0.65"/>
+    <rect x="40" y="100" width="6" height="14" fill="#f4d59a" opacity="0.55"/>
+
+    <rect x="-32" y="48" width="6" height="12" fill="#f4d59a" opacity="0.6"/>
+    <rect x="-12" y="48" width="6" height="12" fill="#f4d59a" opacity="0.7"/>
+    <rect x="6" y="48" width="6" height="12" fill="#f4d59a" opacity="0.7"/>
+    <rect x="26" y="48" width="6" height="12" fill="#f4d59a" opacity="0.6"/>
+
+    <rect x="-18" y="10" width="5" height="10" fill="#f4d59a" opacity="0.75"/>
+    <rect x="-3" y="10" width="5" height="10" fill="#f4d59a" opacity="0.8"/>
+    <rect x="13" y="10" width="5" height="10" fill="#f4d59a" opacity="0.75"/>
+  </g>
+
+  <!-- 前景の木々（左右） -->
+  <g fill="#000" opacity="0.7">
+    <!-- 左側の松 -->
+    <path d="M80 800 L80 680 L60 690 L70 700 L50 710 L65 720 L40 740 L70 750 L80 800 Z"/>
+    <path d="M150 800 L150 660 L130 670 L140 685 L120 700 L135 710 L110 730 L140 740 L150 800 Z"/>
+    <!-- 右側の松 -->
+    <path d="M1520 800 L1520 680 L1540 690 L1530 700 L1550 710 L1535 720 L1560 740 L1530 750 L1520 800 Z"/>
+    <path d="M1450 800 L1450 660 L1470 670 L1460 685 L1480 700 L1465 710 L1490 730 L1460 740 L1450 800 Z"/>
+  </g>
+
+  <!-- 全体に微細なテクスチャ（点描風） -->
+  <g fill="#a8884d" opacity="0.04">
+    <circle cx="200" cy="150" r="1"/>
+    <circle cx="450" cy="100" r="1"/>
+    <circle cx="700" cy="180" r="1"/>
+    <circle cx="950" cy="120" r="1"/>
+    <circle cx="1250" cy="160" r="1"/>
+    <circle cx="350" cy="220" r="1"/>
+    <circle cx="850" cy="240" r="1"/>
+    <circle cx="1100" cy="200" r="1"/>
+  </g>
+</svg>

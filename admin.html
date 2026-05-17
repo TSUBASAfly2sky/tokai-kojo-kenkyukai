@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理画面 | 東海古城研究会</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="admin-body">
+
+<!-- ====== ログイン画面 ====== -->
+<div id="loginScreen" class="admin-login">
+  <div class="login-card">
+    <h1>東海古城研究会</h1>
+    <p class="subtitle">ADMIN LOGIN</p>
+    <div id="loginError" class="admin-error hidden"></div>
+    <div class="form-group">
+      <label for="loginPass">パスワード</label>
+      <input type="password" id="loginPass" autocomplete="current-password">
+      <small>初回ログインのパスワードは <strong>tokai1960</strong> です。ログイン後、設定タブから変更してください。</small>
+    </div>
+    <button id="loginBtn" class="btn btn-primary" style="width:100%; justify-content:center;">ログイン</button>
+    <p style="text-align:center; margin-top:24px; font-size:0.82rem; color:var(--color-text-light);">※ 管理者のみアクセスできます</p>
+  </div>
+</div>
+
+<!-- ====== 管理画面 ====== -->
+<div id="adminScreen" class="hidden">
+  <header class="admin-header">
+    <h1>東海古城研究会 管理画面</h1>
+    <div class="admin-header-actions">
+      <a href="index.html" target="_blank">サイトを見る</a>
+      <button id="exportBtn">📥 JSON書き出し</button>
+      <button id="importBtn">📤 JSON読み込み</button>
+      <input type="file" id="importFile" accept=".json" style="display:none;">
+      <button id="logoutBtn">ログアウト</button>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <div id="adminMsg"></div>
+
+    <div class="tabs">
+      <button class="tab active" data-panel="news">📢 お知らせ管理</button>
+      <button class="tab" data-panel="reports">🏯 活動報告管理</button>
+      <button class="tab" data-panel="settings">⚙️ 設定</button>
+    </div>
+
+    <!-- ====== お知らせタブ ====== -->
+    <section class="tab-panel active" id="panel-news">
+      <div class="panel-section">
+        <h2 id="newsFormTitle">📢 お知らせを追加</h2>
+        <input type="hidden" id="newsId">
+
+        <div class="form-group">
+          <label for="newsTitle">タイトル <span class="required">※必須</span></label>
+          <input type="text" id="newsTitle" placeholder="例:5月見学会のご案内">
+        </div>
+
+        <div class="form-group">
+          <label for="newsDate">掲載日 <span class="required">※必須</span></label>
+          <input type="date" id="newsDate">
+        </div>
+
+        <div class="form-group">
+          <label for="newsContent">内容 <span class="required">※必須</span></label>
+          <textarea id="newsContent" placeholder="見学会の日時・集合場所・参加費など詳しく書いてください"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>公開設定</label>
+          <div class="toggle-row">
+            <label class="toggle">
+              <input type="checkbox" id="newsPublished" checked>
+              <span class="slider"></span>
+            </label>
+            <span class="toggle-label" id="newsPublishedLabel">公開する</span>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary btn-sm" id="newsSaveBtn">💾 保存する</button>
+          <button class="btn btn-secondary btn-sm" id="newsCancelBtn">キャンセル</button>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h2>登録済みのお知らせ</h2>
+        <div class="item-list" id="newsAdminList">
+          <div class="empty-state">まだ登録がありません</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 活動報告タブ ====== -->
+    <section class="tab-panel" id="panel-reports">
+      <div class="panel-section">
+        <h2 id="reportFormTitle">🏯 活動報告を追加</h2>
+        <input type="hidden" id="reportId">
+
+        <div class="form-group">
+          <label for="reportTitle">タイトル <span class="required">※必須</span></label>
+          <input type="text" id="reportTitle" placeholder="例:第302回見学会 犬山城調査">
+        </div>
+
+        <div class="form-group">
+          <label for="reportDate">活動日 <span class="required">※必須</span></label>
+          <input type="date" id="reportDate">
+        </div>
+
+        <div class="form-group">
+          <label for="reportLocation">場所・城名</label>
+          <input type="text" id="reportLocation" placeholder="例:犬山城（愛知県犬山市）">
+        </div>
+
+        <div class="form-group">
+          <label for="reportContent">活動内容 <span class="required">※必須</span></label>
+          <textarea id="reportContent" placeholder="見学内容・感想・参加人数など自由に書いてください。段落は空行で区切ります。"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>公開設定</label>
+          <div class="toggle-row">
+            <label class="toggle">
+              <input type="checkbox" id="reportPublished" checked>
+              <span class="slider"></span>
+            </label>
+            <span class="toggle-label" id="reportPublishedLabel">公開する</span>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary btn-sm" id="reportSaveBtn">💾 保存する</button>
+          <button class="btn btn-secondary btn-sm" id="reportCancelBtn">キャンセル</button>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h2>登録済みの活動報告</h2>
+        <div class="item-list" id="reportAdminList">
+          <div class="empty-state">まだ登録がありません</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 設定タブ ====== -->
+    <section class="tab-panel" id="panel-settings">
+      <div class="panel-section">
+        <h2>🔑 パスワード変更</h2>
+        <div class="form-group">
+          <label for="currentPass">現在のパスワード</label>
+          <input type="password" id="currentPass">
+        </div>
+        <div class="form-group">
+          <label for="newPass">新しいパスワード <small>（6文字以上）</small></label>
+          <input type="password" id="newPass">
+        </div>
+        <div class="form-group">
+          <label for="newPassConfirm">新しいパスワード（確認）</label>
+          <input type="password" id="newPassConfirm">
+        </div>
+        <button class="btn btn-primary btn-sm" id="changePassBtn">パスワードを変更する</button>
+      </div>
+
+      <div class="panel-section">
+        <h2>📖 管理画面の使い方</h2>
+        <div class="help-block">
+          <p><strong>【お知らせの追加】</strong><br>
+          「お知らせ管理」タブでタイトル・日付・内容を入力して「保存する」を押してください。</p>
+
+          <p style="margin-top:14px;"><strong>【活動報告の追加】</strong><br>
+          「活動報告管理」タブでタイトル・日付・場所・内容を入力します。内容は段落ごとに空行を入れると読みやすく表示されます。</p>
+
+          <p style="margin-top:14px;"><strong>【公開・非公開の切り替え】</strong><br>
+          トグルスイッチで公開(緑)/非公開(グレー)を切り替えられます。非公開にするとサイトに表示されなくなります。</p>
+
+          <p style="margin-top:14px;"><strong>【編集・削除】</strong><br>
+          一覧の「編集」ボタンで内容を変更、「削除」で削除できます。</p>
+
+          <p style="margin-top:14px;"><strong>【GitHubへの反映方法】</strong></p>
+          <ol>
+            <li>右上の <strong>📥 JSON書き出し</strong> をクリックして <code>data.json</code> をダウンロード</li>
+            <li>GitHubのリポジトリで <code>data.json</code> を開く</li>
+            <li>鉛筆マーク（編集）→ ダウンロードしたファイルの中身を貼り付け</li>
+            <li>「Commit changes」ボタンで保存</li>
+            <li>数分後、公開サイトに反映されます</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h2>📨 申し込み・問い合わせの共有設定手順</h2>
+        <div class="help-block">
+          <p>フォームに届いた申し込みは、Googleスプレッドシートで役員全員が確認できます。またLINEに自動通知を送ることも可能です。</p>
+
+          <p style="margin-top:14px;"><strong>ステップ1:Googleフォームを作る</strong></p>
+          <ol>
+            <li>forms.google.com でフォームを新規作成</li>
+            <li>項目例:お名前・連絡先メール・参加希望の見学会・備考などを追加</li>
+            <li>右上「送信」→「埋め込み」タブ→ iframeコードをコピーしてHP管理者に渡す</li>
+          </ol>
+
+          <p style="margin-top:14px;"><strong>ステップ2:役員全員で内容を共有する</strong></p>
+          <ol>
+            <li>フォームの「回答」タブ → スプレッドシートアイコンをクリックしてシートを作成</li>
+            <li>作成されたスプレッドシートを開く</li>
+            <li>右上「共有」→ 役員全員のGmailアドレスを追加し「編集者」権限で共有</li>
+            <li>役員全員が同じシートをリアルタイムで確認・返信内容の記入ができます</li>
+          </ol>
+
+          <p style="margin-top:14px;"><strong>ステップ3:申し込みがきたらメールで自動通知する</strong></p>
+          <ol>
+            <li>スプレッドシートのメニュー「ツール」→「通知」を選択</li>
+            <li>「新しい回答があるとき」にチェックを入れる</li>
+            <li>役員全員のGmailに自動でメールが届きます（複数名に設定可能）</li>
+          </ol>
+
+          <p style="margin-top:14px;"><strong>ステップ4:LINEに自動通知を送る（希望する場合）</strong></p>
+          <ol>
+            <li>IFTTT（無料）またはGoogle Apps Scriptを使用</li>
+            <li>「Googleスプレッドシートに新しい行が追加されたら」→「LINEにメッセージを送る」と設定</li>
+            <li>LINE公式アカウントまたはLINEグループのMessaging APIで受信できます</li>
+            <li>設定が難しい場合は、HP管理者にお問い合わせください</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

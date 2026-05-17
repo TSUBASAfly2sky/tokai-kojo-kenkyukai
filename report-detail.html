@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>活動報告詳細 | 東海古城研究会</title>
+  <meta name="description" content="東海古城研究会の活動報告詳細ページです。">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="nav-overlay" id="navOverlay"></div>
+
+<header id="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="site-logo">
+      <div class="logo-text">
+        <span class="name">東海古城研究会</span>
+        <span class="sub">TOKAI KOJO KENKYUKAI</span>
+      </div>
+    </a>
+
+    <nav id="main-nav">
+      <ul>
+        <li><a href="index.html">ホーム</a></li>
+        <li><a href="index.html#about">会の概要</a></li>
+        <li><a href="index.html#news">お知らせ</a></li>
+        <li><a href="report.html" class="active">活動報告</a></li>
+        <li><a href="index.html#contact">お問い合わせ</a></li>
+      </ul>
+    </nav>
+
+    <button class="hamburger" id="hamburger" aria-label="メニュー">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- ===== ページヘッド ===== -->
+<section class="page-head">
+  <div class="page-head-inner">
+    <div class="breadcrumb">
+      <a href="index.html">ホーム</a><span class="sep">›</span><a href="report.html">活動報告</a><span class="sep">›</span>詳細
+    </div>
+    <h1 class="page-title" id="pageTitleHolder">活動報告</h1>
+    <p class="page-subtitle">ACTIVITY REPORT</p>
+  </div>
+</section>
+
+<!-- ===== 詳細本文 ===== -->
+<section class="section">
+  <div class="report-detail" id="reportDetail">
+    <div class="empty-state">読み込み中...</div>
+  </div>
+
+  <div class="report-back">
+    <a href="report.html" class="btn btn-secondary">← 活動報告一覧に戻る</a>
+  </div>
+</section>
+
+<!-- ===== フッター ===== -->
+<footer id="site-footer">
+  <div class="footer-inner">
+    <div class="footer-section">
+      <h3>東海古城研究会</h3>
+      <p>東海地方の古城・城跡を調査・研究する会です。</p>
+    </div>
+    <div class="footer-section">
+      <h3>サイトマップ</h3>
+      <ul>
+        <li><a href="index.html">ホーム</a></li>
+        <li><a href="index.html#about">会の概要</a></li>
+        <li><a href="index.html#news">お知らせ</a></li>
+        <li><a href="report.html">活動報告</a></li>
+        <li><a href="index.html#contact">お問い合わせ</a></li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <h3>更新・管理</h3>
+      <ul>
+        <li><a href="admin.html">管理画面</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2026 東海古城研究会 All Rights Reserved.</p>
+  </div>
+</footer>
+
+<script src="js/data.js"></script>
+<script>
+// ハンバーガー
+document.getElementById('hamburger').addEventListener('click', function() {
+  document.getElementById('main-nav').classList.toggle('open');
+  document.getElementById('navOverlay').classList.toggle('show');
+});
+document.getElementById('navOverlay').addEventListener('click', function() {
+  document.getElementById('main-nav').classList.remove('open');
+  document.getElementById('navOverlay').classList.remove('show');
+});
+
+async function renderDetail() {
+  const id = TKK.getQueryParam('id');
+  const el = document.getElementById('reportDetail');
+  const titleHolder = document.getElementById('pageTitleHolder');
+
+  if (!id) {
+    el.innerHTML = '<div class="empty-state">記事IDが指定されていません。</div>';
+    return;
+  }
+
+  try {
+    const data = await TKK.loadData();
+    const item = (data.reports || []).find(r => r.id === id && TKK.isPublished(r));
+
+    if (!item) {
+      el.innerHTML = '<div class="empty-state">該当する記事が見つかりませんでした。</div>';
+      return;
+    }
+
+    // ページタイトル
+    document.title = `${item.title} | 活動報告 | 東海古城研究会`;
+    titleHolder.textContent = '活動報告';
+
+    el.innerHTML = `
+      <div class="report-detail-meta">
+        <span class="date">${TKK.formatDate(item.date)}</span>
+        ${item.location ? `<span class="loc">${TKK.escapeHtml(item.location)}</span>` : ''}
+      </div>
+      <h1 class="report-detail-title">${TKK.escapeHtml(item.title)}</h1>
+      <div class="report-detail-body">${TKK.escapeHtml(item.content || '')}</div>
+    `;
+  } catch(e) {
+    el.innerHTML = '<div class="empty-state">読み込みに失敗しました。</div>';
+  }
+}
+
+renderDetail();
+</script>
+</body>
+</html>

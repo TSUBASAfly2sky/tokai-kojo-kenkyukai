@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>東海古城研究会</title>
+  <meta name="description" content="東海地方の古城・城跡を調査・研究する会です。定期的な見学会・講演会を開催しています。">
+  <meta property="og:title" content="東海古城研究会">
+  <meta property="og:description" content="東海地方の古城・城跡を調査・研究する会です。">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ===== トップページ固有スタイル ===== */
+
+    /* ヒーロービジュアル */
+    #hero {
+      position: relative;
+      height: 520px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to bottom, rgba(30,18,8,0.45) 0%, rgba(30,18,8,0.25) 60%, rgba(30,18,8,0.6) 100%),
+        url('images/hero.svg') center/cover no-repeat,
+        linear-gradient(135deg, #5c3d1e 0%, #3d2812 100%);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      color: #fff;
+      padding: 0 24px;
+    }
+
+    .hero-content .catch {
+      font-size: 0.9rem;
+      letter-spacing: 0.3em;
+      color: rgba(255,255,255,0.78);
+      margin-bottom: 16px;
+      font-family: var(--font-sans);
+    }
+
+    .hero-content h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      line-height: 1.3;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+      margin-bottom: 20px;
+    }
+
+    .hero-content .desc {
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.85);
+      letter-spacing: 0.05em;
+      margin-bottom: 32px;
+      line-height: 1.9;
+      text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+    }
+
+    .hero-btns {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* ===== お知らせセクション ===== */
+    #news { padding: 64px 0; }
+
+    .news-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+
+    .news-box {
+      background: var(--color-white);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .news-box-header {
+      background: var(--color-primary);
+      color: var(--color-white);
+      padding: 14px 24px;
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      letter-spacing: 0.1em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .news-box-body { padding: 8px 24px; }
+    .news-list li { padding: 14px 0; }
+
+    /* ===== 会の概要セクション ===== */
+    #about { background: var(--color-bg-dark); }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: start;
+    }
+
+    .about-text p {
+      color: var(--color-text);
+      line-height: 2;
+      margin-bottom: 16px;
+      font-size: 0.95rem;
+    }
+
+    .about-info-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      background: var(--color-white);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .about-info-table th,
+    .about-info-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--color-border);
+      vertical-align: top;
+    }
+    .about-info-table tr:last-child th,
+    .about-info-table tr:last-child td { border-bottom: none; }
+
+    .about-info-table th {
+      width: 35%;
+      color: var(--color-primary);
+      font-family: var(--font-serif);
+      font-weight: 600;
+      background: rgba(92,61,30,0.06);
+      white-space: nowrap;
+    }
+
+    /* ===== 活動内容 ===== */
+    #activity { padding: 64px 0; }
+
+    .activity-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .activity-card {
+      text-align: center;
+      padding: 32px 20px;
+    }
+
+    .activity-card h3 {
+      font-family: var(--font-serif);
+      font-size: 1.05rem;
+      color: var(--color-primary);
+      margin-bottom: 10px;
+      letter-spacing: 0.05em;
+    }
+
+    .activity-card p {
+      font-size: 0.87rem;
+      color: var(--color-text-light);
+      line-height: 1.8;
+    }
+
+    /* ===== 問い合わせセクション ===== */
+    #contact {
+      background: var(--color-bg-dark);
+      padding: 64px 0;
+    }
+
+    .contact-inner {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .contact-note {
+      background: var(--color-white);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 32px;
+      font-size: 0.9rem;
+      line-height: 1.9;
+    }
+
+    .contact-note ul {
+      padding-left: 20px;
+      margin-top: 8px;
+      list-style: disc;
+    }
+
+    .contact-note li { margin-bottom: 6px; }
+
+    .gform-wrapper {
+      background: var(--color-white);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .gform-wrapper iframe {
+      width: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* ===== 活動報告プレビュー ===== */
+    #report-preview { padding: 64px 0; }
+
+    .report-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    .report-card {
+      text-decoration: none;
+      color: inherit;
+    }
+    .report-card:hover { color: inherit; }
+
+    .report-card-body { padding: 20px; }
+
+    .report-meta {
+      font-size: 0.78rem;
+      color: var(--color-text-light);
+      margin-bottom: 8px;
+      display: flex;
+      gap: 12px;
+    }
+
+    .report-card-title {
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      color: var(--color-primary);
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+
+    .report-card-excerpt {
+      font-size: 0.85rem;
+      color: var(--color-text-light);
+      line-height: 1.7;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* レスポンシブ */
+    @media (max-width: 768px) {
+      #hero { height: 400px; }
+      .about-grid { grid-template-columns: 1fr; }
+      .activity-cards { grid-template-columns: 1fr; gap: 16px; }
+      .report-grid { grid-template-columns: 1fr; }
+      .news-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .contact-inner { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ナビオーバーレイ -->
+<div class="nav-overlay" id="navOverlay"></div>
+
+<!-- ===== ヘッダー ===== -->
+<header id="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="site-logo">
+      <div class="logo-text">
+        <span class="name">東海古城研究会</span>
+        <span class="sub">TOKAI KOJO KENKYUKAI</span>
+      </div>
+    </a>
+
+    <nav id="main-nav">
+      <ul>
+        <li><a href="index.html" class="active">ホーム</a></li>
+        <li><a href="index.html#about">会の概要</a></li>
+        <li><a href="index.html#news">お知らせ</a></li>
+        <li><a href="report.html">活動報告</a></li>
+        <li><a href="index.html#contact">お問い合わせ</a></li>
+      </ul>
+    </nav>
+
+    <button class="hamburger" id="hamburger" aria-label="メニュー">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- ===== ヒーロービジュアル ===== -->
+<section id="hero">
+  <div id="hero-bg"></div>
+  <div class="hero-content">
+    <p class="catch">— 東海の歴史を、城から学ぶ —</p>
+    <h1>東海古城研究会</h1>
+    <p class="desc">
+      愛知・岐阜・三重・静岡の古城・城跡を調査・研究する会です。<br>
+      定期的な見学会・勉強会を通じて、地域の歴史文化を探求しています。
+    </p>
+    <div class="hero-btns">
+      <a href="#news" class="btn btn-primary">最新のお知らせ</a>
+      <a href="report.html" class="btn btn-secondary" style="border-color:rgba(255,255,255,0.6);color:#fff;">活動報告を見る</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== お知らせ ===== -->
+<section id="news">
+  <div class="container">
+    <div class="news-header">
+      <div class="wa-line" style="margin-bottom:0; flex:1;">
+        <h2 class="section-title" style="white-space:nowrap; margin:0 16px;">
+          <span class="en">INFORMATION</span>
+          お知らせ
+        </h2>
+      </div>
+      <a href="report.html" class="btn btn-secondary btn-sm" style="margin-left:24px; white-space:nowrap;">活動報告一覧 →</a>
+    </div>
+
+    <div class="news-box">
+      <div class="news-box-header">
+        近日中の見学会・イベント情報
+      </div>
+      <div class="news-box-body">
+        <ul class="news-list" id="news-list">
+          <li><span class="loading">読み込み中...</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 会の概要 ===== -->
+<section id="about" class="section">
+  <div class="container">
+    <div class="wa-line">
+      <h2 class="section-title">
+        <span class="en">ABOUT US</span>
+        会の概要
+      </h2>
+    </div>
+
+    <div class="about-grid">
+      <div class="about-text">
+        <p>
+          東海古城研究会は、愛知・岐阜・三重・静岡を中心とした東海地方の古城・城跡を
+          調査・研究することを目的として設立された研究会です。
+        </p>
+        <p>
+          月1回程度の見学会や、年数回の勉強会等を通じて、
+          会員相互の親睦を深めながら地域の歴史文化の研究に取り組んでいます。
+        </p>
+        <p>
+          城好き・歴史好きな方であれば、初心者からベテランまで
+          どなたでも歓迎しております。お気軽にお問い合わせください。
+        </p>
+        <a href="#contact" class="btn btn-primary" style="margin-top:8px;">入会・お問い合わせ</a>
+      </div>
+
+      <div>
+        <table class="about-info-table">
+          <tr><th>会の名称</th><td>東海古城研究会</td></tr>
+          <tr><th>設立</th><td>1960年</td></tr>
+          <tr><th>主な活動地域</th><td>愛知・岐阜・三重・静岡（東海地方全域）</td></tr>
+          <tr><th>活動頻度</th><td>見学会:月1回程度<br>講演会・勉強会:年数回</td></tr>
+          <tr><th>会費</th><td>5,000円（未成年は半額）</td></tr>
+          <tr><th>会報</th><td>「城」年数回発行</td></tr>
+          <tr><th>お問い合わせ</th><td>下記フォームよりご連絡ください</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 活動内容 ===== -->
+<section id="activity" class="section">
+  <div class="container">
+    <div class="wa-line">
+      <h2 class="section-title">
+        <span class="en">ACTIVITY</span>
+        主な活動
+      </h2>
+    </div>
+
+    <div class="activity-cards">
+      <div class="card activity-card">
+        <h3>見学会</h3>
+        <p>月1回程度、東海地方の古城・城跡を訪れます。専門家の解説を聞きながら、実際に城跡を歩いて調査します。</p>
+      </div>
+      <div class="card activity-card">
+        <h3>勉強会</h3>
+        <p>年数回、城郭研究の最新成果や地域史について学びます。</p>
+      </div>
+      <div class="card activity-card">
+        <h3>会報「城」発行</h3>
+        <p>会報「城」を年数回発行。見学会の報告や会員の研究成果、城跡情報などを掲載しています。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 活動報告プレビュー ===== -->
+<section id="report-preview" class="section" style="background:var(--color-bg-dark);">
+  <div class="container">
+    <div class="wa-line">
+      <h2 class="section-title">
+        <span class="en">RECENT REPORT</span>
+        最近の活動報告
+      </h2>
+    </div>
+
+    <div class="report-grid" id="report-grid">
+      <div class="loading">読み込み中...</div>
+    </div>
+
+    <div style="text-align:center; margin-top:40px;">
+      <a href="report.html" class="btn btn-primary">活動報告一覧を見る</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== お問い合わせ ===== -->
+<section id="contact">
+  <div class="container">
+    <div class="wa-line">
+      <h2 class="section-title">
+        <span class="en">CONTACT</span>
+        お問い合わせ・お申し込み
+      </h2>
+    </div>
+
+    <div class="contact-inner">
+      <div class="contact-note">
+        <strong>お問い合わせ・お申し込みについて</strong>
+        <ul>
+          <li>見学会・勉強会への<strong>参加申し込み</strong>はこちらのフォームからお願いします。</li>
+          <li>入会のご相談・一般的なお問い合わせもお気軽にどうぞ。</li>
+          <li>フォームの内容は役員全員で共有しております。</li>
+          <li>返信はメールにて行います。数日以内に担当者よりご返信いたします。</li>
+        </ul>
+      </div>
+
+      <!-- ▼ Googleフォーム埋め込み ▼ -->
+      <div class="gform-wrapper">
+        <iframe
+          src="https://docs.google.com/forms/d/e/1FAIpQLSdv9U6BF75r1oWcRdBS3N-3Q_ptprey6gVxW3IBDNYQ6Gburg/viewform?embedded=true"
+          width="640"
+          height="1212"
+          frameborder="0"
+          marginheight="0"
+          marginwidth="0"
+          style="width:100%; min-height:1212px;"
+          title="お問い合わせフォーム"
+          loading="lazy"
+        >読み込んでいます…</iframe>
+      </div>
+      <!-- ▲ Googleフォーム埋め込み ▲ -->
+    </div>
+  </div>
+</section>
+
+<!-- ===== フッター ===== -->
+<footer id="site-footer">
+  <div class="footer-inner">
+    <div class="footer-section">
+      <h3>東海古城研究会</h3>
+      <p>東海地方の古城・城跡を調査・研究する会です。</p>
+    </div>
+    <div class="footer-section">
+      <h3>サイトマップ</h3>
+      <ul>
+        <li><a href="index.html">ホーム</a></li>
+        <li><a href="index.html#about">会の概要</a></li>
+        <li><a href="index.html#news">お知らせ</a></li>
+        <li><a href="report.html">活動報告</a></li>
+        <li><a href="index.html#contact">お問い合わせ</a></li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <h3>更新・管理</h3>
+      <ul>
+        <li><a href="admin.html">管理画面</a></li>
+      </ul>
+      <p style="margin-top:16px;">
+        活動地域:<br>
+        愛知・岐阜・三重・静岡
+      </p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2026 東海古城研究会 All Rights Reserved.</p>
+  </div>
+</footer>
+
+<script src="js/data.js"></script>
+<script>
+// ===== ハンバーガーメニュー =====
+const hamburger = document.getElementById('hamburger');
+const mainNav   = document.getElementById('main-nav');
+const overlay   = document.getElementById('navOverlay');
+
+hamburger.addEventListener('click', () => {
+  mainNav.classList.toggle('open');
+  overlay.classList.toggle('show');
+});
+overlay.addEventListener('click', () => {
+  mainNav.classList.remove('open');
+  overlay.classList.remove('show');
+});
+
+// ===== お知らせ読み込み =====
+async function loadNews() {
+  const list = document.getElementById('news-list');
+  try {
+    const data = await TKK.loadData();
+    let items = (data.news || []).filter(n => TKK.isPublished(n));
+    items.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+    items = items.slice(0, 6);
+
+    if (items.length === 0) {
+      list.innerHTML = '<li><span class="news-title">現在お知らせはありません</span></li>';
+      return;
+    }
+
+    list.innerHTML = items.map(n => `
+      <li>
+        <span class="news-date">${TKK.formatDateJP(n.date)}</span>
+        <span class="news-title">${TKK.escapeHtml(n.title)}</span>
+      </li>
+    `).join('');
+  } catch(e) {
+    list.innerHTML = '<li><span class="news-title">読み込みに失敗しました</span></li>';
+  }
+}
+
+// ===== 活動報告プレビュー読み込み =====
+async function loadReportPreview() {
+  const grid = document.getElementById('report-grid');
+  try {
+    const data = await TKK.loadData();
+    let items = (data.reports || []).filter(r => TKK.isPublished(r));
+    items.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+    items = items.slice(0, 4);
+
+    if (items.length === 0) {
+      grid.innerHTML = '<p style="color:var(--color-text-light); text-align:center; grid-column:1/-1;">活動報告はまだありません</p>';
+      return;
+    }
+
+    grid.innerHTML = items.map(r => `
+      <a href="report-detail.html?id=${encodeURIComponent(r.id)}" class="card report-card">
+        <div class="report-card-body">
+          <div class="report-meta">
+            <span>${TKK.formatDateJP(r.date)}</span>
+            ${r.location ? `<span>${TKK.escapeHtml(r.location)}</span>` : ''}
+          </div>
+          <h3 class="report-card-title">${TKK.escapeHtml(r.title)}</h3>
+          <p class="report-card-excerpt">${TKK.escapeHtml(r.content || '')}</p>
+        </div>
+      </a>
+    `).join('');
+  } catch(e) {
+    grid.innerHTML = '<p style="color:var(--color-text-light); text-align:center; grid-column:1/-1;">読み込みに失敗しました</p>';
+  }
+}
+
+// ===== 初期化 =====
+loadNews();
+loadReportPreview();
+</script>
+</body>
+</html>
