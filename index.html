@@ -3,11 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>東海古城研究会</title>
-  <meta name="description" content="東海地方の古城・城跡を調査・研究する会です。定期的な見学会・講演会を開催しています。">
+  <title>東海古城研究会 | 愛知・岐阜・三重・静岡の古城を研究する会</title>
+  <meta name="description" content="東海古城研究会は1960年設立、愛知・岐阜・三重・静岡の古城・城跡を調査研究する会です。月1回の見学会、年数回の勉強会・講演会を開催。会報「城」を発行。初心者から研究者まで歓迎。">
+  <meta name="keywords" content="東海古城研究会,古城,城跡,お城,愛知,岐阜,三重,静岡,城郭研究,見学会,城めぐり,日本城郭,城郭調査">
+  <meta name="author" content="東海古城研究会">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://tokai-kojo-kenkyukai.jp/">
+
+  <!-- Open Graph (SNS共有用) -->
   <meta property="og:title" content="東海古城研究会">
-  <meta property="og:description" content="東海地方の古城・城跡を調査・研究する会です。">
+  <meta property="og:description" content="愛知・岐阜・三重・静岡の古城・城跡を調査・研究する会です。定期的な見学会・勉強会を開催しています。">
   <meta property="og:type" content="website">
+  <meta property="og:url" content="https://tokai-kojo-kenkyukai.jp/">
+  <meta property="og:image" content="https://tokai-kojo-kenkyukai.jp/images/hero.svg">
+  <meta property="og:site_name" content="東海古城研究会">
+  <meta property="og:locale" content="ja_JP">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="東海古城研究会">
+  <meta name="twitter:description" content="愛知・岐阜・三重・静岡の古城・城跡を調査・研究する会">
+  <meta name="twitter:image" content="https://tokai-kojo-kenkyukai.jp/images/hero.svg">
+
+  <!-- 構造化データ (Schema.org) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "東海古城研究会",
+    "alternateName": "TOKAI KOJO KENKYUKAI",
+    "url": "https://tokai-kojo-kenkyukai.jp/",
+    "logo": "https://tokai-kojo-kenkyukai.jp/images/hero.svg",
+    "description": "愛知・岐阜・三重・静岡の古城・城跡を調査・研究する会です。月1回の見学会、年数回の勉強会を開催しています。",
+    "foundingDate": "1960",
+    "areaServed": [
+      { "@type": "AdministrativeArea", "name": "愛知県" },
+      { "@type": "AdministrativeArea", "name": "岐阜県" },
+      { "@type": "AdministrativeArea", "name": "三重県" },
+      { "@type": "AdministrativeArea", "name": "静岡県" }
+    ],
+    "knowsAbout": ["古城", "城跡", "城郭", "日本史", "戦国時代", "東海地方"]
+  }
+  </script>
+
   <link rel="stylesheet" href="css/style.css">
   <style>
     /* ===== トップページ固有スタイル ===== */
@@ -104,7 +142,6 @@
     }
 
     .news-box-body { padding: 8px 24px; }
-    .news-list li { padding: 14px 0; }
 
     /* ===== 会の概要セクション ===== */
     #about { background: var(--color-bg-dark); }
@@ -539,18 +576,38 @@ async function loadNews() {
     items = items.slice(0, 6);
 
     if (items.length === 0) {
-      list.innerHTML = '<li><span class="news-title">現在お知らせはありません</span></li>';
+      list.innerHTML = '<li><div class="news-summary"><span class="news-title">現在お知らせはありません</span></div></li>';
       return;
     }
 
-    list.innerHTML = items.map(n => `
-      <li>
-        <span class="news-date">${TKK.formatDateJP(n.date)}</span>
-        <span class="news-title">${TKK.escapeHtml(n.title)}</span>
-      </li>
-    `).join('');
+    list.innerHTML = items.map(n => {
+      const hasContent = n.content && n.content.trim();
+      if (hasContent) {
+        return `
+          <li>
+            <details class="news-item">
+              <summary class="news-summary">
+                <span class="news-date">${TKK.formatDateJP(n.date)}</span>
+                <span class="news-title">${TKK.escapeHtml(n.title)}</span>
+                <span class="news-toggle"><span class="toggle-text"></span></span>
+              </summary>
+              <div class="news-content">${TKK.escapeHtml(n.content)}</div>
+            </details>
+          </li>
+        `;
+      } else {
+        return `
+          <li>
+            <div class="news-summary">
+              <span class="news-date">${TKK.formatDateJP(n.date)}</span>
+              <span class="news-title">${TKK.escapeHtml(n.title)}</span>
+            </div>
+          </li>
+        `;
+      }
+    }).join('');
   } catch(e) {
-    list.innerHTML = '<li><span class="news-title">読み込みに失敗しました</span></li>';
+    list.innerHTML = '<li><div class="news-summary"><span class="news-title">読み込みに失敗しました</span></div></li>';
   }
 }
 
