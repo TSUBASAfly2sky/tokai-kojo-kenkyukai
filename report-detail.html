@@ -4,7 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>活動報告詳細 | 東海古城研究会</title>
-  <meta name="description" content="東海古城研究会の活動報告詳細ページです。">
+  <meta name="description" content="東海古城研究会の活動報告詳細ページ。古城見学会・勉強会の詳しい記録と写真をご覧いただけます。">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="活動報告 | 東海古城研究会">
+  <meta property="og:description" content="東海古城研究会の活動詳細">
+  <meta property="og:type" content="article">
+  <meta property="og:image" content="https://tokai-kojo-kenkyukai.jp/images/hero.svg">
+  <meta property="og:site_name" content="東海古城研究会">
+  <meta property="og:locale" content="ja_JP">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -122,6 +129,17 @@ async function renderDetail() {
     document.title = `${item.title} | 活動報告 | 東海古城研究会`;
     titleHolder.textContent = '活動報告';
 
+    const images = item.images || [];
+    const galleryHtml = images.length > 0 ? `
+      <div class="report-gallery">
+        ${images.map((src, i) => `
+          <a href="${src}" target="_blank" rel="noopener" class="report-gallery-item">
+            <img src="${src}" alt="${TKK.escapeHtml(item.title)} 写真${i + 1}" loading="lazy">
+          </a>
+        `).join('')}
+      </div>
+    ` : '';
+
     el.innerHTML = `
       <div class="report-detail-meta">
         <span class="date">${TKK.formatDate(item.date)}</span>
@@ -129,6 +147,7 @@ async function renderDetail() {
       </div>
       <h1 class="report-detail-title">${TKK.escapeHtml(item.title)}</h1>
       <div class="report-detail-body">${TKK.escapeHtml(item.content || '')}</div>
+      ${galleryHtml}
     `;
   } catch(e) {
     el.innerHTML = '<div class="empty-state">読み込みに失敗しました。</div>';

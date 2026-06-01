@@ -18,7 +18,6 @@
     <div class="form-group">
       <label for="loginPass">パスワード</label>
       <input type="password" id="loginPass" autocomplete="current-password">
-      <small>初回ログインのパスワードは <strong>tokai1960</strong> です。ログイン後、設定タブから変更してください。</small>
     </div>
     <button id="loginBtn" class="btn btn-primary" style="width:100%; justify-content:center;">ログイン</button>
     <p style="text-align:center; margin-top:24px; font-size:0.82rem; color:var(--color-text-light);">※ 管理者のみアクセスできます</p>
@@ -31,9 +30,6 @@
     <h1>東海古城研究会 管理画面</h1>
     <div class="admin-header-actions">
       <a href="index.html" target="_blank">サイトを見る</a>
-      <button id="exportBtn">📥 JSON書き出し</button>
-      <button id="importBtn">📤 JSON読み込み</button>
-      <input type="file" id="importFile" accept=".json" style="display:none;">
       <button id="logoutBtn">ログアウト</button>
     </div>
   </header>
@@ -101,22 +97,35 @@
 
         <div class="form-group">
           <label for="reportTitle">タイトル <span class="required">※必須</span></label>
-          <input type="text" id="reportTitle" placeholder="例:第302回見学会 犬山城調査">
+          <input type="text" id="reportTitle" placeholder="例：第302回見学会 犬山城調査">
         </div>
 
-        <div class="form-group">
-          <label for="reportDate">活動日 <span class="required">※必須</span></label>
-          <input type="date" id="reportDate">
-        </div>
-
-        <div class="form-group">
-          <label for="reportLocation">場所・城名</label>
-          <input type="text" id="reportLocation" placeholder="例:犬山城（愛知県犬山市）">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="reportDate">活動日 <span class="required">※必須</span></label>
+            <input type="date" id="reportDate">
+          </div>
+          <div class="form-group">
+            <label for="reportLocation">場所・城名</label>
+            <input type="text" id="reportLocation" placeholder="例：犬山城（愛知県犬山市）">
+          </div>
         </div>
 
         <div class="form-group">
           <label for="reportContent">活動内容 <span class="required">※必須</span></label>
-          <textarea id="reportContent" placeholder="見学内容・感想・参加人数など自由に書いてください。段落は空行で区切ります。"></textarea>
+          <textarea id="reportContent" placeholder="見学内容・感想・参加人数など。段落は空行で区切ると読みやすく表示されます。"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>写真</label>
+          <small>写真をここにドラッグ＆ドロップ、またはクリックで選択。アップ時に自動で軽く圧縮されます（1報告あたり6枚程度まで推奨）。</small>
+          <div class="dropzone" id="reportDropzone" tabindex="0" role="button" aria-label="写真をドラッグまたはクリックで追加">
+            <span class="dropzone-icon">📷</span>
+            <span class="dropzone-text">ここに写真をドラッグ＆ドロップ<br>または <u>クリックして選択</u></span>
+            <input type="file" id="reportImagePicker" accept="image/*" multiple hidden>
+          </div>
+          <div id="reportImageStatus" class="dropzone-status"></div>
+          <div id="reportImagePreview" class="img-preview-grid"></div>
         </div>
 
         <div class="form-group">
@@ -147,23 +156,6 @@
     <!-- ====== 設定タブ ====== -->
     <section class="tab-panel" id="panel-settings">
       <div class="panel-section">
-        <h2>🔑 パスワード変更</h2>
-        <div class="form-group">
-          <label for="currentPass">現在のパスワード</label>
-          <input type="password" id="currentPass">
-        </div>
-        <div class="form-group">
-          <label for="newPass">新しいパスワード <small>（6文字以上）</small></label>
-          <input type="password" id="newPass">
-        </div>
-        <div class="form-group">
-          <label for="newPassConfirm">新しいパスワード（確認）</label>
-          <input type="password" id="newPassConfirm">
-        </div>
-        <button class="btn btn-primary btn-sm" id="changePassBtn">パスワードを変更する</button>
-      </div>
-
-      <div class="panel-section">
         <h2>📖 管理画面の使い方</h2>
         <div class="help-block">
           <p><strong>【お知らせの追加】</strong><br>
@@ -172,27 +164,21 @@
           <p style="margin-top:14px;"><strong>【活動報告の追加】</strong><br>
           「活動報告管理」タブでタイトル・日付・場所・内容を入力します。内容は段落ごとに空行を入れると読みやすく表示されます。</p>
 
+          <p style="margin-top:14px;"><strong>【写真の追加】</strong><br>
+          活動報告フォームの「写真」エリアに、写真をドラッグ＆ドロップするか、クリックで選んでください。自動で軽く圧縮されてそのまま埋め込まれます。GitHubへ写真を別アップロードする必要はありません。サムネイルの「×」で削除できます。1報告あたり6枚程度までが快適です。</p>
+
           <p style="margin-top:14px;"><strong>【公開・非公開の切り替え】</strong><br>
           トグルスイッチで公開(緑)/非公開(グレー)を切り替えられます。非公開にするとサイトに表示されなくなります。</p>
 
           <p style="margin-top:14px;"><strong>【編集・削除】</strong><br>
           一覧の「編集」ボタンで内容を変更、「削除」で削除できます。</p>
-
-          <p style="margin-top:14px;"><strong>【GitHubへの反映方法】</strong></p>
-          <ol>
-            <li>右上の <strong>📥 JSON書き出し</strong> をクリックして <code>data.json</code> をダウンロード</li>
-            <li>GitHubのリポジトリで <code>data.json</code> を開く</li>
-            <li>鉛筆マーク（編集）→ ダウンロードしたファイルの中身を貼り付け</li>
-            <li>「Commit changes」ボタンで保存</li>
-            <li>数分後、公開サイトに反映されます</li>
-          </ol>
         </div>
       </div>
 
       <div class="panel-section">
         <h2>📨 申し込み・問い合わせの共有設定手順</h2>
         <div class="help-block">
-          <p>フォームに届いた申し込みは、Googleスプレッドシートで役員全員が確認できます。またLINEに自動通知を送ることも可能です。</p>
+          <p>フォームに届いた申し込みは、Googleスプレッドシートで役員全員が確認できます。</p>
 
           <p style="margin-top:14px;"><strong>ステップ1:Googleフォームを作る</strong></p>
           <ol>
@@ -214,14 +200,6 @@
             <li>スプレッドシートのメニュー「ツール」→「通知」を選択</li>
             <li>「新しい回答があるとき」にチェックを入れる</li>
             <li>役員全員のGmailに自動でメールが届きます（複数名に設定可能）</li>
-          </ol>
-
-          <p style="margin-top:14px;"><strong>ステップ4:LINEに自動通知を送る（希望する場合）</strong></p>
-          <ol>
-            <li>IFTTT（無料）またはGoogle Apps Scriptを使用</li>
-            <li>「Googleスプレッドシートに新しい行が追加されたら」→「LINEにメッセージを送る」と設定</li>
-            <li>LINE公式アカウントまたはLINEグループのMessaging APIで受信できます</li>
-            <li>設定が難しい場合は、HP管理者にお問い合わせください</li>
           </ol>
         </div>
       </div>

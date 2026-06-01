@@ -74,10 +74,101 @@
      ============================================ */
   let data = { news: [], reports: [] };
 
-  async function refreshData() {
-    data = await TKK.loadData();
-    data.news = data.news || [];
-    data.reports = data.reports || [];
+  // 編集中の活動報告の写真（Base64データURLの配列）
+  let reportImages = [];
+
+  // 画像圧縮設定
+  const IMG_MAX_DIM = 1200;   // 長辺の最大ピクセル
+  const IMG_QUALITY = 0.75;   // JPEG品質（0〜1）
+
+  /**
+   * 画像ファイルをリサイズ＆JPEG圧縮してBase64データURLにする
+   */
+  function compressImage(file) {
+    return new Promise((resolve, reject) => {
+      if (!file.type.startsWith('image/')) {
+        reject(new Error('画像ファイルではありません'));
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          let w = img.width;
+          let h = img.height;
+          if (w >= h && w > IMG_MAX_DIM) {
+            h = Math.round(h * IMG_MAX_DIM / w);
+            w = IMG_MAX_DIM;
+          } else if (h > w && h > IMG_MAX_DIM) {
+            w = Math.round(w * IMG_MAX_DIM / h);
+            h = IMG_MAX_DIM;
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', IMG_QUALITY));
+        };
+        img.onerror = () => reject(new Error('画像を読み込めませんでした'));
+        img.src = e.target.result;
+      };
+      reader.onerror = () => reject(new Error('ファイルを読み込めませんでした'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /**
+   * 複数ファイルを順に圧縮して reportImages に追加
+   */
+  async function addImageFiles(fileList) {
+    const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+    if (files.length === 0) {
+      showMsg('画像ファイルを選んでください', 'error');
+      return;
+    }
+    const status = document.getElementById('reportImageStatus');
+    let added = 0;
+    for (let i = 0; i < files.length; i++) {
+      if (status) status.textContent = `画像を処理中... (${i + 1}/${files.length})`;
+      try {
+        const dataUrl = await compressImage(files[i]);
+        reportImages.push(dataUrl);
+        added++;
+      } catch (err) {
+        console.warn('画像処理スキップ:', err.message);
+      }
+    }
+    if (status) status.textContent = '';
+    renderImagePreview();
+    if (added > 0) showMsg(`写真を${added}枚追加しました`, 'success');
+  }
+
+  /**
+   * 写真プレビュー描画（削除ボタン付き）
+   */
+  function renderImagePreview() {
+    const box = document.getElementById('reportImagePreview');
+    if (!box) return;
+    if (reportImages.length === 0) { box.innerHTML = ''; return; }
+    box.innerHTML = reportImages.map((src, i) => `
+      <div class="img-preview-cell">
+        <img src="${src}" alt="写真${i + 1}">
+        <button type="button" class="img-remove" data-idx="${i}" title="削除">×</button>
+        <span class="img-order">${i + 1}</span>
+      </div>
+    `).join('');
+  }
+
+  function refreshData() {
+    return TKK.loadData().then(d => {
+      data = d;
+      data.news = data.news || [];
+      data.reports = data.reports || [];
+      return data;
+    });
   }
 
   function persist() {
@@ -188,6 +279,8 @@
     document.getElementById('reportLocation').value = '';
     document.getElementById('reportContent').value = '';
     document.getElementById('reportPublished').checked = true;
+    reportImages = [];
+    renderImagePreview();
     updatePublishedLabel('report');
     document.getElementById('reportFormTitle').textContent = '🏯 活動報告を追加';
   }
@@ -199,6 +292,8 @@
     document.getElementById('reportLocation').value = item.location || '';
     document.getElementById('reportContent').value = item.content || '';
     document.getElementById('reportPublished').checked = TKK.isPublished(item);
+    reportImages = Array.isArray(item.images) ? item.images.slice() : [];
+    renderImagePreview();
     updatePublishedLabel('report');
     document.getElementById('reportFormTitle').textContent = '🏯 活動報告を編集';
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -210,23 +305,35 @@
     const date = document.getElementById('reportDate').value;
     const location = document.getElementById('reportLocation').value.trim();
     const content = document.getElementById('reportContent').value.trim();
+    const images = reportImages.slice();
     const is_published = document.getElementById('reportPublished').checked;
 
     if (!title) { showMsg('タイトルを入力してください', 'error'); return; }
     if (!date)  { showMsg('日付を入力してください', 'error'); return; }
     if (!content) { showMsg('内容を入力してください', 'error'); return; }
 
+    // 保存前のスナップショット（容量超過時に戻すため）
+    const backup = JSON.stringify(data.reports);
+
     if (id) {
       const idx = data.reports.findIndex(r => r.id === id);
       if (idx >= 0) {
-        data.reports[idx] = { id, title, date, location, content, is_published };
-        showMsg('活動報告を更新しました', 'success');
+        data.reports[idx] = { id, title, date, location, content, images, is_published };
       }
     } else {
-      data.reports.push({ id: TKK.genId('report'), title, date, location, content, is_published });
-      showMsg('活動報告を追加しました', 'success');
+      data.reports.push({ id: TKK.genId('report'), title, date, location, content, images, is_published });
     }
-    persist();
+
+    try {
+      persist();
+    } catch (err) {
+      // localStorage 容量超過などで保存失敗
+      data.reports = JSON.parse(backup);
+      showMsg('写真が多すぎてブラウザに保存できませんでした。写真の枚数を減らしてから保存してください。', 'error');
+      return;
+    }
+
+    showMsg(id ? '活動報告を更新しました' : '活動報告を追加しました', 'success');
     clearReportForm();
     renderReportAdmin();
   }
@@ -263,7 +370,7 @@
           <h4>${TKK.escapeHtml(item.title)}
             <span class="badge ${pub ? 'public' : 'private'}">${pub ? '公開中' : '非公開'}</span>
           </h4>
-          <div class="item-row-meta">${TKK.formatDate(item.date)}${item.location ? ' / ' + TKK.escapeHtml(item.location) : ''}</div>
+          <div class="item-row-meta">${TKK.formatDate(item.date)}${item.location ? ' / ' + TKK.escapeHtml(item.location) : ''}${item.images && item.images.length > 0 ? ' / 📷' + item.images.length + '枚' : ''}</div>
         </div>
         <div class="item-row-actions">
           <button class="btn btn-secondary btn-sm" data-act="toggle-report" data-id="${item.id}">${pub ? '非公開にする' : '公開する'}</button>
@@ -273,53 +380,6 @@
       </div>
       `;
     }).join('');
-  }
-
-  /* ============================================
-     JSON エクスポート / インポート
-     ============================================ */
-  function exportJSON() {
-    const exportData = {
-      news: data.news,
-      reports: data.reports,
-      exportedAt: new Date().toISOString()
-    };
-    const text = JSON.stringify(exportData, null, 2);
-    const blob = new Blob([text], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'data.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    showMsg('data.json を書き出しました。GitHubのリポジトリに上書きしてください。', 'success');
-  }
-
-  function importJSON(file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      try {
-        const parsed = JSON.parse(e.target.result);
-        if (!parsed.news || !parsed.reports) {
-          showMsg('JSONの形式が違います（news / reports が必要）', 'error');
-          return;
-        }
-        if (!confirm('現在のデータを置き換えます。よろしいですか？')) return;
-        data = {
-          news: parsed.news || [],
-          reports: parsed.reports || []
-        };
-        persist();
-        renderNewsAdmin();
-        renderReportAdmin();
-        showMsg('JSONを読み込みました', 'success');
-      } catch (err) {
-        showMsg('JSON読み込みエラー:' + err.message, 'error');
-      }
-    };
-    reader.readAsText(file);
   }
 
   /* ============================================
@@ -397,6 +457,53 @@
     document.getElementById('newsPublished').addEventListener('change', () => updatePublishedLabel('news'));
     document.getElementById('reportPublished').addEventListener('change', () => updatePublishedLabel('report'));
 
+    // ===== 写真ドラッグ＆ドロップ =====
+    const dropzone = document.getElementById('reportDropzone');
+    const picker = document.getElementById('reportImagePicker');
+
+    // クリックでファイル選択
+    dropzone.addEventListener('click', (e) => {
+      if (e.target === picker) return;
+      picker.click();
+    });
+    dropzone.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); picker.click(); }
+    });
+    picker.addEventListener('change', e => {
+      if (e.target.files && e.target.files.length) addImageFiles(e.target.files);
+      e.target.value = '';
+    });
+
+    // ドラッグ＆ドロップ
+    ['dragenter', 'dragover'].forEach(ev => {
+      dropzone.addEventListener(ev, e => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.add('dragover');
+      });
+    });
+    ['dragleave', 'drop'].forEach(ev => {
+      dropzone.addEventListener(ev, e => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (ev === 'dragleave' && dropzone.contains(e.relatedTarget)) return;
+        dropzone.classList.remove('dragover');
+      });
+    });
+    dropzone.addEventListener('drop', e => {
+      const files = e.dataTransfer && e.dataTransfer.files;
+      if (files && files.length) addImageFiles(files);
+    });
+
+    // プレビューの削除ボタン
+    document.getElementById('reportImagePreview').addEventListener('click', e => {
+      const btn = e.target.closest('.img-remove');
+      if (!btn) return;
+      const idx = parseInt(btn.dataset.idx, 10);
+      reportImages.splice(idx, 1);
+      renderImagePreview();
+    });
+
     document.getElementById('newsAdminList').addEventListener('click', e => {
       const btn = e.target.closest('button[data-act]');
       if (!btn) return;
@@ -412,14 +519,6 @@
       if (btn.dataset.act === 'edit-report') fillReportForm(data.reports.find(r => r.id === id));
       if (btn.dataset.act === 'del-report') deleteReport(id);
       if (btn.dataset.act === 'toggle-report') toggleReportPublished(id);
-    });
-
-    document.getElementById('exportBtn').addEventListener('click', exportJSON);
-    document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
-    document.getElementById('importFile').addEventListener('change', e => {
-      const file = e.target.files[0];
-      if (file) importJSON(file);
-      e.target.value = '';
     });
 
     document.getElementById('changePassBtn').addEventListener('click', changePassword);
