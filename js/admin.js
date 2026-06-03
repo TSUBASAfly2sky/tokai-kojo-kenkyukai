@@ -224,6 +224,9 @@
   }
 
   function refreshData() {
+    // 管理画面では常にGitHubの最新データを取得する（localStorageは使わない）
+    localStorage.removeItem(TKK.STORAGE_KEY);
+    TKK.clearCache();
     return TKK.loadData().then(d => {
       data = d;
       data.news    = data.news    || [];
