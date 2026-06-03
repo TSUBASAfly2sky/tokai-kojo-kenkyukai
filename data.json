@@ -1,19 +1,4 @@
 {
-  "news": [
-    {
-      "id": "news-1780461556302-8nuk6",
-      "title": "テスト２０",
-      "date": "2026-06-03",
-      "content": "テスト２０",
-      "is_published": true
-    },
-    {
-      "id": "news-1780461906318-l8mkt",
-      "title": "テスト３０",
-      "date": "2026-06-03",
-      "content": "テスト３０",
-      "is_published": true
-    }
-  ],
+  "news": [],
   "reports": []
 }
