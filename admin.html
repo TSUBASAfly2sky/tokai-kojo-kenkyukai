@@ -157,29 +157,6 @@
     <section class="tab-panel" id="panel-settings">
 
       <div class="panel-section">
-        <h2>🔗 GitHub連携設定（本番反映）</h2>
-        <div class="help-block" style="margin-bottom:16px;">
-          <p>Personal Access Token（PAT）を登録すると、「保存する」ボタンを押した際に自動でGitHubの <code>data.json</code> を更新し、サイト全体に反映されます。</p>
-          <p style="margin-top:12px;"><strong>PATの作成手順：</strong></p>
-          <ol style="margin:8px 0 0 16px; line-height:2;">
-            <li>GitHubにログイン → 右上アイコン → <strong>Settings</strong></li>
-            <li>左メニュー最下部 <strong>Developer settings</strong> → <strong>Personal access tokens</strong> → <strong>Tokens (classic)</strong></li>
-            <li><strong>Generate new token (classic)</strong> → 名前を入力（例：tokai-kojo-admin）</li>
-            <li><strong>repo</strong> にチェック → <strong>Generate token</strong> → 表示されたトークンをコピー</li>
-          </ol>
-        </div>
-        <div class="form-group">
-          <label for="githubPat">GitHub Personal Access Token</label>
-          <input type="password" id="githubPat" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
-        </div>
-        <div id="githubPatStatus" style="margin-bottom:10px; font-size:0.85rem; min-height:1.4em;"></div>
-        <div class="btn-row">
-          <button class="btn btn-primary btn-sm" id="savePatBtn">💾 トークンを保存する</button>
-          <button class="btn btn-secondary btn-sm" id="testPatBtn">接続テスト</button>
-        </div>
-      </div>
-
-      <div class="panel-section">
         <h2>📖 管理画面の使い方</h2>
         <div class="help-block">
           <p><strong>【お知らせの追加】</strong><br>

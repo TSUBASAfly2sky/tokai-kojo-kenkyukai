@@ -7,14 +7,14 @@
 
   const PASS_KEY    = 'tkk_admin_pass_v1';
   const SESSION_KEY = 'tkk_admin_session_v1';
-  const PAT_KEY     = 'tkk_github_pat_v1';
   const DEFAULT_PASS = 'tokai1960';
 
-  /* ---- GitHub リポジトリ設定 ---- */
-  const GH_OWNER  = 'TSUBASAfly2sky';
-  const GH_REPO   = 'tokai-kojo-kenkyukai';
-  const GH_FILE   = 'data.json';
-  const GH_BRANCH = 'main';
+  /* ---- Cloudflare Worker 設定 ----
+   * Cloudflare Worker を作成したら、WORKER_URL にその URL を貼り付ける。
+   * WORKER_SECRET は Cloudflare の環境変数に設定した値と同じ文字列にする。
+   */
+  const WORKER_URL    = 'https://tokai-kojo.hugtsubasa.workers.dev';
+  const WORKER_SECRET = 'tkk-secret-2024-kojo';
 
   /* ============================================
      簡易ハッシュ（SHA-256）
@@ -88,19 +88,8 @@
   }
 
   /* ============================================
-     GitHub API 連携
+     Cloudflare Worker 経由で GitHub に反映
      ============================================ */
-  function getPat() {
-    return localStorage.getItem(PAT_KEY) || '';
-  }
-
-  function ghHeaders() {
-    return {
-      'Authorization': `token ${getPat()}`,
-      'Accept': 'application/vnd.github+json',
-      'Content-Type': 'application/json'
-    };
-  }
 
   /* UTF-8文字列をBase64エンコード（日本語対応） */
   function toBase64(str) {
@@ -110,69 +99,34 @@
   }
 
   /**
-   * data.json の現在のSHAをGitHub APIから取得する
-   */
-  async function fetchFileSha() {
-    const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}?ref=${GH_BRANCH}`;
-    const res = await fetch(url, { headers: ghHeaders() });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || `HTTP ${res.status}`);
-    }
-    const json = await res.json();
-    return json.sha;
-  }
-
-  /**
-   * 現在の data を GitHub の data.json に push する
-   * PAT未設定の場合はスキップ（ローカル保存のみ）
+   * 現在の data を Cloudflare Worker 経由で GitHub の data.json に push する
    */
   async function pushToGitHub() {
-    const pat = getPat();
-    if (!pat) return; // PAT未設定 → ローカル保存のみ
-
-    showMsg('GitHubに反映中...', 'success');
-
-    try {
-      const sha  = await fetchFileSha();
-      const content = toBase64(JSON.stringify(data, null, 2));
-      const url  = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`;
-      const body = JSON.stringify({
-        message: 'コンテンツ更新（管理画面）',
-        content,
-        sha,
-        branch: GH_BRANCH
-      });
-      const res = await fetch(url, { method: 'PUT', headers: ghHeaders(), body });
-      if (res.ok) {
-        showMsg('GitHubに反映しました。数分後にサイトへ反映されます。', 'success');
-      } else {
-        const err = await res.json().catch(() => ({}));
-        showMsg('GitHub反映に失敗しました: ' + (err.message || res.status), 'error');
-      }
-    } catch (e) {
-      showMsg('GitHub反映に失敗しました: ' + e.message, 'error');
+    if (!WORKER_URL) {
+      showMsg('⚠️ Worker URLが未設定です。管理者に連絡してください。', 'error');
+      return;
     }
-  }
 
-  /**
-   * PAT接続テスト：リポジトリ情報の取得を試みる
-   */
-  async function testPat(pat) {
-    showPatStatus('テスト中...', 'info');
+    showMsg('サイトに反映中...', 'success');
+
     try {
-      const res = await fetch(
-        `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}`,
-        { headers: { 'Authorization': `token ${pat}`, 'Accept': 'application/vnd.github+json' } }
-      );
+      const res = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          secret: WORKER_SECRET,
+          content: toBase64(JSON.stringify(data, null, 2)),
+        }),
+      });
+
       if (res.ok) {
-        showPatStatus('✅ 接続成功！保存・編集の操作がサイトに反映されるようになりました。', 'ok');
+        showMsg('✅ サイトに反映しました。数分後に表示が更新されます。', 'success');
       } else {
         const err = await res.json().catch(() => ({}));
-        showPatStatus('❌ 接続失敗: ' + (err.message || `HTTP ${res.status}`), 'error');
+        showMsg('❌ 反映に失敗しました: ' + (err.error || res.status), 'error');
       }
     } catch (e) {
-      showPatStatus('❌ 接続失敗: ' + e.message, 'error');
+      showMsg('❌ 反映に失敗しました: ' + e.message, 'error');
     }
   }
 
@@ -324,6 +278,7 @@
       data.news.push({ id: TKK.genId('news'), title, date, content, is_published });
     }
     persist();
+    showMsg(id ? 'お知らせを更新しました' : 'お知らせを追加しました', 'success');
     clearNewsForm();
     renderNewsAdmin();
     await pushToGitHub();
@@ -435,6 +390,7 @@
       return;
     }
 
+    showMsg(id ? '活動報告を更新しました' : '活動報告を追加しました', 'success');
     clearReportForm();
     renderReportAdmin();
     await pushToGitHub();
@@ -520,13 +476,6 @@
     renderNewsAdmin();
     renderReportAdmin();
 
-    // PAT 入力欄を既存の値で埋める
-    const patInput = document.getElementById('githubPat');
-    if (patInput && getPat()) {
-      patInput.value = getPat();
-      showPatStatus('✅ トークン登録済み', 'ok');
-    }
-
     /* ---- タブ ---- */
     document.querySelectorAll('.tab').forEach(t => {
       t.addEventListener('click', () => switchTab(t.dataset.panel));
@@ -602,26 +551,6 @@
       if (btn.dataset.act === 'edit-report')   fillReportForm(data.reports.find(r => r.id === id));
       if (btn.dataset.act === 'del-report')    deleteReport(id);
       if (btn.dataset.act === 'toggle-report') toggleReportPublished(id);
-    });
-
-    /* ---- GitHub PAT 保存・テスト ---- */
-    document.getElementById('savePatBtn').addEventListener('click', () => {
-      const val = document.getElementById('githubPat').value.trim();
-      if (!val) {
-        showPatStatus('❌ トークンを入力してください', 'error');
-        return;
-      }
-      localStorage.setItem(PAT_KEY, val);
-      showPatStatus('✅ トークンを保存しました', 'ok');
-    });
-
-    document.getElementById('testPatBtn').addEventListener('click', () => {
-      const val = document.getElementById('githubPat').value.trim();
-      if (!val) {
-        showPatStatus('❌ まずトークンを入力してください', 'error');
-        return;
-      }
-      testPat(val);
     });
 
     /* ---- ログアウト ---- */
