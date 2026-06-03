@@ -8,5 +8,15 @@
       "is_published": true
     }
   ],
-  "reports": []
+  "reports": [
+    {
+      "id": "report-1780461159103-5z0vd",
+      "title": "テスト６",
+      "date": "2026-06-03",
+      "location": "テスト６",
+      "content": "テスト６",
+      "images": [],
+      "is_published": true
+    }
+  ]
 }
