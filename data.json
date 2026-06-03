@@ -1,22 +1,12 @@
 {
   "news": [
     {
-      "id": "news-1780461047903-tl8mi",
-      "title": "テスト5",
+      "id": "news-1780461228618-wwtrb",
+      "title": "テスト７",
       "date": "2026-06-03",
-      "content": "テスト5",
+      "content": "テスト７",
       "is_published": true
     }
   ],
-  "reports": [
-    {
-      "id": "report-1780461159103-5z0vd",
-      "title": "テスト６",
-      "date": "2026-06-03",
-      "location": "テスト６",
-      "content": "テスト６",
-      "images": [],
-      "is_published": true
-    }
-  ]
+  "reports": []
 }
