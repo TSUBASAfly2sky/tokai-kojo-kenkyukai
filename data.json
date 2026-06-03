@@ -27,6 +27,13 @@
       "date": "2026-06-03",
       "content": "テスト２０",
       "is_published": true
+    },
+    {
+      "id": "news-1780461888018-l48zd",
+      "title": "テスト３０",
+      "date": "2026-06-03",
+      "content": "テスト３０",
+      "is_published": true
     }
   ],
   "reports": [
