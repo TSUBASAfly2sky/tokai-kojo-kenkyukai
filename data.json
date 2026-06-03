@@ -6,6 +6,13 @@
       "date": "2026-06-03",
       "content": "テスト２",
       "is_published": true
+    },
+    {
+      "id": "news-1780459790844-tnhcl",
+      "title": "テスト３",
+      "date": "2026-06-03",
+      "content": "テスト３",
+      "is_published": true
     }
   ],
   "reports": []
