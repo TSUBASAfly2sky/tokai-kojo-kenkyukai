@@ -34,13 +34,6 @@
       "date": "2026-06-03",
       "content": "テスト３０",
       "is_published": true
-    },
-    {
-      "id": "news-1780461969569-ylw49",
-      "title": "テスト４０",
-      "date": "2026-06-03",
-      "content": "テスト４０",
-      "is_published": true
     }
   ],
   "reports": [
@@ -93,11 +86,11 @@
       "published": true
     },
     {
-      "id": "report-1780462198650-876ql",
-      "title": "テスト４０",
+      "id": "report-1780462211583-d8jgq",
+      "title": "テスト5０",
       "date": "2026-06-03",
-      "location": "テスト４０",
-      "content": "テスト４０",
+      "location": "テスト5０",
+      "content": "テスト5０",
       "images": [],
       "is_published": true
     }
