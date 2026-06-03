@@ -1,15 +1,24 @@
 /* ========================================
-   東海古城研究会 - 管理画面ロジック v2
+   東海古城研究会 - 管理画面ロジック v3
    ======================================== */
 
 (function() {
   'use strict';
 
-  const PASS_KEY = 'tkk_admin_pass_v1';
+  const PASS_KEY    = 'tkk_admin_pass_v1';
   const SESSION_KEY = 'tkk_admin_session_v1';
+  const PAT_KEY     = 'tkk_github_pat_v1';
   const DEFAULT_PASS = 'tokai1960';
 
-  /* ---- 簡易ハッシュ（SHA-256） ---- */
+  /* ---- GitHub リポジトリ設定 ---- */
+  const GH_OWNER  = 'TSUBASAfly2sky';
+  const GH_REPO   = 'tokai-kojo-kenkyukai';
+  const GH_FILE   = 'data.json';
+  const GH_BRANCH = 'main';
+
+  /* ============================================
+     簡易ハッシュ（SHA-256）
+     ============================================ */
   async function hashPass(pass) {
     const encoder = new TextEncoder();
     const data = encoder.encode(pass);
@@ -28,18 +37,27 @@
     return stored;
   }
 
-  /* ---- メッセージ表示 ---- */
+  /* ============================================
+     メッセージ表示
+     ============================================ */
   function showMsg(text, type) {
     const box = document.getElementById('adminMsg');
     if (!box) return;
     box.innerHTML = `<div class="admin-${type}">${TKK.escapeHtml(text)}</div>`;
-    setTimeout(() => { box.innerHTML = ''; }, 4000);
+    setTimeout(() => { box.innerHTML = ''; }, 5000);
   }
 
   function showLoginError(text) {
     const box = document.getElementById('loginError');
     box.textContent = text;
     box.classList.remove('hidden');
+  }
+
+  function showPatStatus(text, type) {
+    const el = document.getElementById('githubPatStatus');
+    if (!el) return;
+    const color = type === 'ok' ? '#2e7d32' : type === 'error' ? '#c62828' : '#555';
+    el.innerHTML = `<span style="color:${color}">${text}</span>`;
   }
 
   /* ============================================
@@ -70,6 +88,95 @@
   }
 
   /* ============================================
+     GitHub API 連携
+     ============================================ */
+  function getPat() {
+    return localStorage.getItem(PAT_KEY) || '';
+  }
+
+  function ghHeaders() {
+    return {
+      'Authorization': `token ${getPat()}`,
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json'
+    };
+  }
+
+  /* UTF-8文字列をBase64エンコード（日本語対応） */
+  function toBase64(str) {
+    const bytes = new TextEncoder().encode(str);
+    const binary = Array.from(bytes).map(b => String.fromCharCode(b)).join('');
+    return btoa(binary);
+  }
+
+  /**
+   * data.json の現在のSHAをGitHub APIから取得する
+   */
+  async function fetchFileSha() {
+    const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}?ref=${GH_BRANCH}`;
+    const res = await fetch(url, { headers: ghHeaders() });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || `HTTP ${res.status}`);
+    }
+    const json = await res.json();
+    return json.sha;
+  }
+
+  /**
+   * 現在の data を GitHub の data.json に push する
+   * PAT未設定の場合はスキップ（ローカル保存のみ）
+   */
+  async function pushToGitHub() {
+    const pat = getPat();
+    if (!pat) return; // PAT未設定 → ローカル保存のみ
+
+    showMsg('GitHubに反映中...', 'success');
+
+    try {
+      const sha  = await fetchFileSha();
+      const content = toBase64(JSON.stringify(data, null, 2));
+      const url  = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`;
+      const body = JSON.stringify({
+        message: 'コンテンツ更新（管理画面）',
+        content,
+        sha,
+        branch: GH_BRANCH
+      });
+      const res = await fetch(url, { method: 'PUT', headers: ghHeaders(), body });
+      if (res.ok) {
+        showMsg('GitHubに反映しました。数分後にサイトへ反映されます。', 'success');
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showMsg('GitHub反映に失敗しました: ' + (err.message || res.status), 'error');
+      }
+    } catch (e) {
+      showMsg('GitHub反映に失敗しました: ' + e.message, 'error');
+    }
+  }
+
+  /**
+   * PAT接続テスト：リポジトリ情報の取得を試みる
+   */
+  async function testPat(pat) {
+    showPatStatus('テスト中...', 'info');
+    try {
+      const res = await fetch(
+        `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}`,
+        { headers: { 'Authorization': `token ${pat}`, 'Accept': 'application/vnd.github+json' } }
+      );
+      if (res.ok) {
+        showPatStatus('✅ 接続成功！保存・編集の操作がサイトに反映されるようになりました。', 'ok');
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showPatStatus('❌ 接続失敗: ' + (err.message || `HTTP ${res.status}`), 'error');
+      }
+    } catch (e) {
+      showPatStatus('❌ 接続失敗: ' + e.message, 'error');
+    }
+  }
+
+  /* ============================================
      データ読み書き
      ============================================ */
   let data = { news: [], reports: [] };
@@ -78,8 +185,8 @@
   let reportImages = [];
 
   // 画像圧縮設定
-  const IMG_MAX_DIM = 1200;   // 長辺の最大ピクセル
-  const IMG_QUALITY = 0.75;   // JPEG品質（0〜1）
+  const IMG_MAX_DIM = 1200;  // 長辺の最大ピクセル
+  const IMG_QUALITY = 0.75;  // JPEG品質（0〜1）
 
   /**
    * 画像ファイルをリサイズ＆JPEG圧縮してBase64データURLにする
@@ -165,7 +272,7 @@
   function refreshData() {
     return TKK.loadData().then(d => {
       data = d;
-      data.news = data.news || [];
+      data.news    = data.news    || [];
       data.reports = data.reports || [];
       return data;
     });
@@ -199,47 +306,46 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function saveNews() {
+  async function saveNews() {
     const id = document.getElementById('newsId').value;
-    const title = document.getElementById('newsTitle').value.trim();
-    const date = document.getElementById('newsDate').value;
-    const content = document.getElementById('newsContent').value.trim();
+    const title      = document.getElementById('newsTitle').value.trim();
+    const date       = document.getElementById('newsDate').value;
+    const content    = document.getElementById('newsContent').value.trim();
     const is_published = document.getElementById('newsPublished').checked;
 
-    if (!title) { showMsg('タイトルを入力してください', 'error'); return; }
-    if (!date)  { showMsg('日付を入力してください', 'error'); return; }
+    if (!title)   { showMsg('タイトルを入力してください', 'error'); return; }
+    if (!date)    { showMsg('日付を入力してください', 'error'); return; }
     if (!content) { showMsg('内容を入力してください', 'error'); return; }
 
     if (id) {
       const idx = data.news.findIndex(n => n.id === id);
-      if (idx >= 0) {
-        data.news[idx] = { id, title, date, content, is_published };
-        showMsg('お知らせを更新しました', 'success');
-      }
+      if (idx >= 0) data.news[idx] = { id, title, date, content, is_published };
     } else {
       data.news.push({ id: TKK.genId('news'), title, date, content, is_published });
-      showMsg('お知らせを追加しました', 'success');
     }
     persist();
     clearNewsForm();
     renderNewsAdmin();
+    await pushToGitHub();
   }
 
-  function deleteNews(id) {
+  async function deleteNews(id) {
     if (!confirm('このお知らせを削除します。よろしいですか？')) return;
     data.news = data.news.filter(n => n.id !== id);
     persist();
     renderNewsAdmin();
     showMsg('お知らせを削除しました', 'success');
+    await pushToGitHub();
   }
 
-  function toggleNewsPublished(id) {
+  async function toggleNewsPublished(id) {
     const item = data.news.find(n => n.id === id);
     if (!item) return;
     item.is_published = !TKK.isPublished(item);
-    delete item.published;  // 旧フィールドは削除
+    delete item.published;
     persist();
     renderNewsAdmin();
+    await pushToGitHub();
   }
 
   function renderNewsAdmin() {
@@ -299,27 +405,24 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function saveReport() {
-    const id = document.getElementById('reportId').value;
-    const title = document.getElementById('reportTitle').value.trim();
-    const date = document.getElementById('reportDate').value;
+  async function saveReport() {
+    const id       = document.getElementById('reportId').value;
+    const title    = document.getElementById('reportTitle').value.trim();
+    const date     = document.getElementById('reportDate').value;
     const location = document.getElementById('reportLocation').value.trim();
-    const content = document.getElementById('reportContent').value.trim();
-    const images = reportImages.slice();
+    const content  = document.getElementById('reportContent').value.trim();
+    const images   = reportImages.slice();
     const is_published = document.getElementById('reportPublished').checked;
 
-    if (!title) { showMsg('タイトルを入力してください', 'error'); return; }
-    if (!date)  { showMsg('日付を入力してください', 'error'); return; }
+    if (!title)   { showMsg('タイトルを入力してください', 'error'); return; }
+    if (!date)    { showMsg('日付を入力してください', 'error'); return; }
     if (!content) { showMsg('内容を入力してください', 'error'); return; }
 
-    // 保存前のスナップショット（容量超過時に戻すため）
     const backup = JSON.stringify(data.reports);
 
     if (id) {
       const idx = data.reports.findIndex(r => r.id === id);
-      if (idx >= 0) {
-        data.reports[idx] = { id, title, date, location, content, images, is_published };
-      }
+      if (idx >= 0) data.reports[idx] = { id, title, date, location, content, images, is_published };
     } else {
       data.reports.push({ id: TKK.genId('report'), title, date, location, content, images, is_published });
     }
@@ -327,32 +430,33 @@
     try {
       persist();
     } catch (err) {
-      // localStorage 容量超過などで保存失敗
       data.reports = JSON.parse(backup);
       showMsg('写真が多すぎてブラウザに保存できませんでした。写真の枚数を減らしてから保存してください。', 'error');
       return;
     }
 
-    showMsg(id ? '活動報告を更新しました' : '活動報告を追加しました', 'success');
     clearReportForm();
     renderReportAdmin();
+    await pushToGitHub();
   }
 
-  function deleteReport(id) {
+  async function deleteReport(id) {
     if (!confirm('この活動報告を削除します。よろしいですか？')) return;
     data.reports = data.reports.filter(r => r.id !== id);
     persist();
     renderReportAdmin();
     showMsg('活動報告を削除しました', 'success');
+    await pushToGitHub();
   }
 
-  function toggleReportPublished(id) {
+  async function toggleReportPublished(id) {
     const item = data.reports.find(r => r.id === id);
     if (!item) return;
     item.is_published = !TKK.isPublished(item);
     delete item.published;
     persist();
     renderReportAdmin();
+    await pushToGitHub();
   }
 
   function renderReportAdmin() {
@@ -383,36 +487,6 @@
   }
 
   /* ============================================
-     パスワード変更
-     ============================================ */
-  async function changePassword() {
-    const current = document.getElementById('currentPass').value;
-    const next = document.getElementById('newPass').value;
-    const confirmPass = document.getElementById('newPassConfirm').value;
-
-    if (!current || !next || !confirmPass) {
-      showMsg('すべて入力してください', 'error'); return;
-    }
-    if (next.length < 6) {
-      showMsg('新しいパスワードは6文字以上にしてください', 'error'); return;
-    }
-    if (next !== confirmPass) {
-      showMsg('新しいパスワードが一致しません', 'error'); return;
-    }
-    const stored = await getStoredPassHash();
-    const currentHash = await hashPass(current);
-    if (currentHash !== stored) {
-      showMsg('現在のパスワードが違います', 'error'); return;
-    }
-    const newHash = await hashPass(next);
-    localStorage.setItem(PASS_KEY, newHash);
-    document.getElementById('currentPass').value = '';
-    document.getElementById('newPass').value = '';
-    document.getElementById('newPassConfirm').value = '';
-    showMsg('パスワードを変更しました', 'success');
-  }
-
-  /* ============================================
      ユーティリティ
      ============================================ */
   function todayString() {
@@ -424,7 +498,7 @@
   }
 
   function updatePublishedLabel(prefix) {
-    const cb = document.getElementById(prefix + 'Published');
+    const cb  = document.getElementById(prefix + 'Published');
     const lbl = document.getElementById(prefix + 'PublishedLabel');
     if (lbl) lbl.textContent = cb.checked ? '公開する' : '非公開';
   }
@@ -446,22 +520,32 @@
     renderNewsAdmin();
     renderReportAdmin();
 
+    // PAT 入力欄を既存の値で埋める
+    const patInput = document.getElementById('githubPat');
+    if (patInput && getPat()) {
+      patInput.value = getPat();
+      showPatStatus('✅ トークン登録済み', 'ok');
+    }
+
+    /* ---- タブ ---- */
     document.querySelectorAll('.tab').forEach(t => {
       t.addEventListener('click', () => switchTab(t.dataset.panel));
     });
 
+    /* ---- お知らせ ---- */
     document.getElementById('newsSaveBtn').addEventListener('click', saveNews);
     document.getElementById('newsCancelBtn').addEventListener('click', clearNewsForm);
+    document.getElementById('newsPublished').addEventListener('change', () => updatePublishedLabel('news'));
+
+    /* ---- 活動報告 ---- */
     document.getElementById('reportSaveBtn').addEventListener('click', saveReport);
     document.getElementById('reportCancelBtn').addEventListener('click', clearReportForm);
-    document.getElementById('newsPublished').addEventListener('change', () => updatePublishedLabel('news'));
     document.getElementById('reportPublished').addEventListener('change', () => updatePublishedLabel('report'));
 
-    // ===== 写真ドラッグ＆ドロップ =====
+    /* ---- 写真ドラッグ＆ドロップ ---- */
     const dropzone = document.getElementById('reportDropzone');
-    const picker = document.getElementById('reportImagePicker');
+    const picker   = document.getElementById('reportImagePicker');
 
-    // クリックでファイル選択
     dropzone.addEventListener('click', (e) => {
       if (e.target === picker) return;
       picker.click();
@@ -473,19 +557,15 @@
       if (e.target.files && e.target.files.length) addImageFiles(e.target.files);
       e.target.value = '';
     });
-
-    // ドラッグ＆ドロップ
     ['dragenter', 'dragover'].forEach(ev => {
       dropzone.addEventListener(ev, e => {
-        e.preventDefault();
-        e.stopPropagation();
+        e.preventDefault(); e.stopPropagation();
         dropzone.classList.add('dragover');
       });
     });
     ['dragleave', 'drop'].forEach(ev => {
       dropzone.addEventListener(ev, e => {
-        e.preventDefault();
-        e.stopPropagation();
+        e.preventDefault(); e.stopPropagation();
         if (ev === 'dragleave' && dropzone.contains(e.relatedTarget)) return;
         dropzone.classList.remove('dragover');
       });
@@ -495,7 +575,7 @@
       if (files && files.length) addImageFiles(files);
     });
 
-    // プレビューの削除ボタン
+    /* ---- 写真削除ボタン ---- */
     document.getElementById('reportImagePreview').addEventListener('click', e => {
       const btn = e.target.closest('.img-remove');
       if (!btn) return;
@@ -504,24 +584,47 @@
       renderImagePreview();
     });
 
+    /* ---- 一覧ボタン（お知らせ） ---- */
     document.getElementById('newsAdminList').addEventListener('click', e => {
       const btn = e.target.closest('button[data-act]');
       if (!btn) return;
       const id = btn.dataset.id;
-      if (btn.dataset.act === 'edit-news') fillNewsForm(data.news.find(n => n.id === id));
-      if (btn.dataset.act === 'del-news') deleteNews(id);
+      if (btn.dataset.act === 'edit-news')   fillNewsForm(data.news.find(n => n.id === id));
+      if (btn.dataset.act === 'del-news')    deleteNews(id);
       if (btn.dataset.act === 'toggle-news') toggleNewsPublished(id);
     });
+
+    /* ---- 一覧ボタン（活動報告） ---- */
     document.getElementById('reportAdminList').addEventListener('click', e => {
       const btn = e.target.closest('button[data-act]');
       if (!btn) return;
       const id = btn.dataset.id;
-      if (btn.dataset.act === 'edit-report') fillReportForm(data.reports.find(r => r.id === id));
-      if (btn.dataset.act === 'del-report') deleteReport(id);
+      if (btn.dataset.act === 'edit-report')   fillReportForm(data.reports.find(r => r.id === id));
+      if (btn.dataset.act === 'del-report')    deleteReport(id);
       if (btn.dataset.act === 'toggle-report') toggleReportPublished(id);
     });
 
-    document.getElementById('changePassBtn').addEventListener('click', changePassword);
+    /* ---- GitHub PAT 保存・テスト ---- */
+    document.getElementById('savePatBtn').addEventListener('click', () => {
+      const val = document.getElementById('githubPat').value.trim();
+      if (!val) {
+        showPatStatus('❌ トークンを入力してください', 'error');
+        return;
+      }
+      localStorage.setItem(PAT_KEY, val);
+      showPatStatus('✅ トークンを保存しました', 'ok');
+    });
+
+    document.getElementById('testPatBtn').addEventListener('click', () => {
+      const val = document.getElementById('githubPat').value.trim();
+      if (!val) {
+        showPatStatus('❌ まずトークンを入力してください', 'error');
+        return;
+      }
+      testPat(val);
+    });
+
+    /* ---- ログアウト ---- */
     document.getElementById('logoutBtn').addEventListener('click', logout);
   }
 
