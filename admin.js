@@ -473,7 +473,12 @@
      初期化
      ============================================ */
   async function initAdmin() {
-    await refreshData();
+    try {
+      await refreshData();
+    } catch(e) {
+      console.error('データ読み込みエラー:', e);
+      data = { news: [], reports: [] };
+    }
     clearNewsForm();
     clearReportForm();
     renderNewsAdmin();
