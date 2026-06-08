@@ -223,23 +223,28 @@
     `).join('');
   }
 
+  // 管理画面は常に公開サイトから最新データを取得する
+  const LIVE_DATA_URL = 'https://tokai-kojo-kenkyukai.jp/data.json';
+
   async function refreshData() {
-    // 管理画面では常にGitHubの最新データを取得する
     TKK.clearCache();
+    localStorage.removeItem(TKK.STORAGE_KEY);
+
     try {
-      const res = await fetch('data.json', { cache: 'no-store' });
+      const res = await fetch(LIVE_DATA_URL, { cache: 'no-store' });
       if (res.ok) {
         data = await res.json();
       }
     } catch(e) {
-      // fetchに失敗した場合はlocalStorageから読む
-      const local = localStorage.getItem(TKK.STORAGE_KEY);
-      if (local) data = JSON.parse(local);
+      // オフライン時はローカルの data.json にフォールバック
+      try {
+        const res2 = await fetch('data.json', { cache: 'no-store' });
+        if (res2.ok) data = await res2.json();
+      } catch(e2) {}
     }
+
     data.news    = data.news    || [];
     data.reports = data.reports || [];
-    // 取得したデータをlocalStorageに保存（公開ページの高速化）
-    TKK.saveData(data);
     return data;
   }
 
@@ -481,7 +486,12 @@
      初期化
      ============================================ */
   async function initAdmin() {
-    await refreshData();
+    try {
+      await refreshData();
+    } catch(e) {
+      console.error('データ読み込みエラー:', e);
+      data = { news: [], reports: [] };
+    }
     clearNewsForm();
     clearReportForm();
     renderNewsAdmin();
