@@ -40,11 +40,13 @@
   /* ============================================
      メッセージ表示
      ============================================ */
+  let _msgTimer = null;
   function showMsg(text, type) {
     const box = document.getElementById('adminMsg');
     if (!box) return;
+    if (_msgTimer) { clearTimeout(_msgTimer); _msgTimer = null; }
     box.innerHTML = `<div class="admin-${type}">${TKK.escapeHtml(text)}</div>`;
-    setTimeout(() => { box.innerHTML = ''; }, 5000);
+    _msgTimer = setTimeout(() => { box.innerHTML = ''; _msgTimer = null; }, 5000);
   }
 
   function showLoginError(text) {
@@ -106,8 +108,6 @@
       showMsg('⚠️ Worker URLが未設定です。管理者に連絡してください。', 'error');
       return;
     }
-
-    showMsg('サイトに反映中...', 'success');
 
     try {
       const res = await fetch(WORKER_URL, {
@@ -223,16 +223,24 @@
     `).join('');
   }
 
-  function refreshData() {
-    // 管理画面では常にGitHubの最新データを取得する（localStorageは使わない）
-    localStorage.removeItem(TKK.STORAGE_KEY);
+  async function refreshData() {
+    // 管理画面では常にGitHubの最新データを取得する
     TKK.clearCache();
-    return TKK.loadData().then(d => {
-      data = d;
-      data.news    = data.news    || [];
-      data.reports = data.reports || [];
-      return data;
-    });
+    try {
+      const res = await fetch('data.json', { cache: 'no-store' });
+      if (res.ok) {
+        data = await res.json();
+      }
+    } catch(e) {
+      // fetchに失敗した場合はlocalStorageから読む
+      const local = localStorage.getItem(TKK.STORAGE_KEY);
+      if (local) data = JSON.parse(local);
+    }
+    data.news    = data.news    || [];
+    data.reports = data.reports || [];
+    // 取得したデータをlocalStorageに保存（公開ページの高速化）
+    TKK.saveData(data);
+    return data;
   }
 
   function persist() {

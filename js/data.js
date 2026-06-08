@@ -30,7 +30,7 @@ const TKK = (function() {
 
     // 2. data.json を読む
     try {
-      const res = await fetch('data.json', { cache: 'no-store' });
+      const res = await fetch('data.json');
       if (res.ok) {
         cachedData = await res.json();
         return cachedData;
