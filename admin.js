@@ -223,16 +223,29 @@
     `).join('');
   }
 
-  function refreshData() {
-    // 管理画面では常にGitHubの最新データを取得する（localStorageを無視）
-    localStorage.removeItem(TKK.STORAGE_KEY);
+  // 管理画面は常に公開サイトから最新データを取得する
+  const LIVE_DATA_URL = 'https://tokai-kojo-kenkyukai.jp/data.json';
+
+  async function refreshData() {
     TKK.clearCache();
-    return TKK.loadData().then(d => {
-      data = d;
-      data.news    = data.news    || [];
-      data.reports = data.reports || [];
-      return data;
-    });
+    localStorage.removeItem(TKK.STORAGE_KEY);
+
+    try {
+      const res = await fetch(LIVE_DATA_URL, { cache: 'no-store' });
+      if (res.ok) {
+        data = await res.json();
+      }
+    } catch(e) {
+      // オフライン時はローカルの data.json にフォールバック
+      try {
+        const res2 = await fetch('data.json', { cache: 'no-store' });
+        if (res2.ok) data = await res2.json();
+      } catch(e2) {}
+    }
+
+    data.news    = data.news    || [];
+    data.reports = data.reports || [];
+    return data;
   }
 
   function persist() {
