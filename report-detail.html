@@ -94,6 +94,24 @@
   </div>
 </footer>
 
+<!-- ライトボックス -->
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="写真拡大表示" style="
+  display:none; position:fixed; inset:0; z-index:9000;
+  background:rgba(0,0,0,0.92); cursor:pointer;
+  align-items:center; justify-content:center;
+">
+  <button id="lightboxClose" aria-label="閉じる" style="
+    position:absolute; top:16px; right:24px;
+    background:none; border:none; color:#fff;
+    font-size:2.4rem; line-height:1; cursor:pointer; z-index:1;
+  ">×</button>
+  <img id="lightboxImg" src="" alt="拡大写真" style="
+    max-width:90vw; max-height:90vh; object-fit:contain;
+    box-shadow:0 4px 32px rgba(0,0,0,0.6); border-radius:4px;
+    pointer-events:none;
+  ">
+</div>
+
 <script src="js/data.js"></script>
 <script>
 // ハンバーガー
@@ -133,9 +151,12 @@ async function renderDetail() {
     const galleryHtml = images.length > 0 ? `
       <div class="report-gallery">
         ${images.map((src, i) => `
-          <a href="${src}" target="_blank" rel="noopener" class="report-gallery-item">
+          <div class="report-gallery-item" role="button" tabindex="0"
+               style="cursor:zoom-in;"
+               data-src="${src}"
+               aria-label="${TKK.escapeHtml(item.title)} 写真${i + 1}を拡大">
             <img src="${src}" alt="${TKK.escapeHtml(item.title)} 写真${i + 1}" loading="lazy">
-          </a>
+          </div>
         `).join('')}
       </div>
     ` : '';
@@ -155,6 +176,34 @@ async function renderDetail() {
 }
 
 renderDetail();
+
+/* ===== ライトボックス ===== */
+const lightbox     = document.getElementById('lightbox');
+const lightboxImg  = document.getElementById('lightboxImg');
+const lightboxClose = document.getElementById('lightboxClose');
+
+function openLightbox(src) {
+  lightboxImg.src = src;
+  lightbox.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  lightbox.style.display = 'none';
+  lightboxImg.src = '';
+  document.body.style.overflow = '';
+}
+
+// ギャラリーのクリック（動的に生成されるのでdocumentに委任）
+document.addEventListener('click', function(e) {
+  const item = e.target.closest('[data-src]');
+  if (item) { openLightbox(item.dataset.src); return; }
+  if (e.target === lightbox || e.target === lightboxClose) closeLightbox();
+});
+
+// キーボード（Escで閉じる）
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeLightbox();
+});
 </script>
 </body>
 </html>
