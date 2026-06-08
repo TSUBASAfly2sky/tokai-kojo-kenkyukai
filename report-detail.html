@@ -147,7 +147,18 @@ async function renderDetail() {
     document.title = `${item.title} | 活動報告 | 東海古城研究会`;
     titleHolder.textContent = '活動報告';
 
-    const images = item.images || [];
+    // 写真を取得（新フォーマット: data-images.json / 旧フォーマット: item.images）
+    let images = item.images || [];
+    if (images.length === 0) {
+      try {
+        const imgRes = await fetch('data-images.json');
+        if (imgRes.ok) {
+          const imagesData = await imgRes.json();
+          images = imagesData[item.id] || [];
+        }
+      } catch(e) {}
+    }
+
     const galleryHtml = images.length > 0 ? `
       <div class="report-gallery">
         ${images.map((src, i) => `

@@ -101,7 +101,26 @@
   }
 
   /**
-   * 現在の data を Cloudflare Worker 経由で GitHub の data.json に push する
+   * Worker にファイルを1件プッシュする内部関数
+   */
+  async function pushFile(fileName, content) {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        secret: WORKER_SECRET,
+        file: fileName,
+        content: toBase64(JSON.stringify(content, null, 2)),
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || res.status);
+    }
+  }
+
+  /**
+   * data.json（本文のみ）と data-images.json（写真のみ）に分けて GitHub に push する
    */
   async function pushToGitHub() {
     if (!WORKER_URL) {
@@ -110,21 +129,25 @@
     }
 
     try {
-      const res = await fetch(WORKER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          secret: WORKER_SECRET,
-          content: toBase64(JSON.stringify(data, null, 2)),
-        }),
+      // ① 本文データ（写真なし）
+      const metaData = {
+        news: data.news,
+        reports: data.reports.map(({ images, ...meta }) => meta),
+      };
+
+      // ② 写真データ（report IDをキーとした辞書）
+      const imagesData = {};
+      data.reports.forEach(r => {
+        if (r.images && r.images.length > 0) imagesData[r.id] = r.images;
       });
 
-      if (res.ok) {
-        showMsg('✅ サイトに反映しました。数分後に表示が更新されます。', 'success');
-      } else {
-        const err = await res.json().catch(() => ({}));
-        showMsg('❌ 反映に失敗しました: ' + (err.error || res.status), 'error');
-      }
+      // 両ファイルを並行してプッシュ
+      await Promise.all([
+        pushFile('data.json', metaData),
+        pushFile('data-images.json', imagesData),
+      ]);
+
+      showMsg('✅ サイトに反映しました。数分後に表示が更新されます。', 'success');
     } catch (e) {
       showMsg('❌ 反映に失敗しました: ' + e.message, 'error');
     }
@@ -362,18 +385,39 @@
     document.getElementById('reportFormTitle').textContent = '🏯 活動報告を追加';
   }
 
-  function fillReportForm(item) {
+  async function fillReportForm(item) {
     document.getElementById('reportId').value = item.id;
     document.getElementById('reportTitle').value = item.title || '';
     document.getElementById('reportDate').value = item.date || '';
     document.getElementById('reportLocation').value = item.location || '';
     document.getElementById('reportContent').value = item.content || '';
     document.getElementById('reportPublished').checked = TKK.isPublished(item);
-    reportImages = Array.isArray(item.images) ? item.images.slice() : [];
-    renderImagePreview();
     updatePublishedLabel('report');
     document.getElementById('reportFormTitle').textContent = '🏯 活動報告を編集';
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // 写真を遅延読み込み（data-images.json から取得、なければ report 内の images を使用）
+    reportImages = [];
+    renderImagePreview();
+    const status = document.getElementById('reportImageStatus');
+    if (status) status.textContent = '写真を読み込み中...';
+    try {
+      if (item.images && item.images.length > 0) {
+        // 旧フォーマット（data.json に images が含まれている場合）
+        reportImages = item.images.slice();
+      } else {
+        // 新フォーマット（data-images.json から取得）
+        const res = await fetch('data-images.json', { cache: 'no-store' });
+        if (res.ok) {
+          const imagesData = await res.json();
+          reportImages = imagesData[item.id] || [];
+        }
+      }
+    } catch(e) {
+      reportImages = [];
+    }
+    if (status) status.textContent = '';
+    renderImagePreview();
   }
 
   async function saveReport() {

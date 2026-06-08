@@ -1,20 +1,15 @@
 /**
- * 東海古城研究会 - Cloudflare Worker
+ * 東海古城研究会 - Cloudflare Worker v2
  *
- * 【役割】
- * 管理画面からのリクエストを受け取り、GitHub API を呼んで data.json を更新する。
- * GitHub トークンはここに環境変数として安全に保管されるため、
- * 管理画面を使う各デバイスにトークンを設定する必要がなくなる。
- *
- * 【Cloudflare Workers の環境変数に設定するもの】
- *   GH_PAT          : GitHubのPersonal Access Token（ghp_...）
- *   WORKER_SECRET   : 管理画面との合言葉（admin.js の WORKER_SECRET と同じ文字列）
+ * 【環境変数】
+ *   GH_PAT         : GitHubのPersonal Access Token
+ *   WORKER_SECRET  : 管理画面との合言葉（admin.js の WORKER_SECRET と同じ）
  */
 
-const GH_OWNER  = 'TSUBASAfly2sky';
-const GH_REPO   = 'tokai-kojo-kenkyukai';
-const GH_FILE   = 'data.json';
-const GH_BRANCH = 'main';
+const GH_OWNER   = 'TSUBASAfly2sky';
+const GH_REPO    = 'tokai-kojo-kenkyukai';
+const GH_BRANCH  = 'main';
+const ALLOWED_FILES = ['data.json', 'data-images.json'];
 
 export default {
   async fetch(request, env) {
@@ -24,16 +19,13 @@ export default {
       'Access-Control-Allow-Headers': 'Content-Type',
     };
 
-    // プリフライトリクエスト（ブラウザの事前確認）への応答
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders });
     }
-
     if (request.method !== 'POST') {
       return new Response('Method not allowed', { status: 405, headers: corsHeaders });
     }
 
-    // リクエストの内容を受け取る
     let body;
     try {
       body = await request.json();
@@ -46,12 +38,17 @@ export default {
       return json({ error: '認証エラー' }, 401, corsHeaders);
     }
 
-    // Base64エンコード済みの data.json 内容が必要
     if (!body.content) {
       return json({ error: 'content がありません' }, 400, corsHeaders);
     }
 
-    const ghBase = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`;
+    // 対象ファイルの確認（data.json または data-images.json のみ許可）
+    const file = body.file || 'data.json';
+    if (!ALLOWED_FILES.includes(file)) {
+      return json({ error: '不正なファイル名です' }, 400, corsHeaders);
+    }
+
+    const ghBase = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${file}`;
     const ghHeaders = {
       'Authorization': `token ${env.GH_PAT}`,
       'Accept': 'application/vnd.github+json',
@@ -59,24 +56,29 @@ export default {
       'Content-Type': 'application/json',
     };
 
-    // 現在のファイルの SHA を取得
+    // 現在の SHA を取得（ファイルが存在しない場合は新規作成）
+    let sha = null;
     const shaRes = await fetch(`${ghBase}?ref=${GH_BRANCH}`, { headers: ghHeaders });
-    if (!shaRes.ok) {
+    if (shaRes.ok) {
+      const fileData = await shaRes.json();
+      sha = fileData.sha;
+    } else if (shaRes.status !== 404) {
       const err = await shaRes.json().catch(() => ({}));
       return json({ error: 'SHA取得失敗: ' + (err.message || shaRes.status) }, 500, corsHeaders);
     }
-    const { sha } = await shaRes.json();
 
-    // data.json を更新
+    // ファイルを更新（または新規作成）
+    const putBody = {
+      message: `${file} 更新（管理画面）`,
+      content: body.content,
+      branch: GH_BRANCH,
+    };
+    if (sha) putBody.sha = sha;
+
     const putRes = await fetch(ghBase, {
       method: 'PUT',
       headers: ghHeaders,
-      body: JSON.stringify({
-        message: 'コンテンツ更新（管理画面）',
-        content: body.content,
-        sha,
-        branch: GH_BRANCH,
-      }),
+      body: JSON.stringify(putBody),
     });
 
     const result = await putRes.json().catch(() => ({}));
