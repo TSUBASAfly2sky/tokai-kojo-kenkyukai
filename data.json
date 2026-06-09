@@ -94,6 +94,14 @@
       "location": "テスト",
       "content": "テスト",
       "is_published": true
+    },
+    {
+      "id": "report-1780980040594-lku7a",
+      "title": "テスト２",
+      "date": "2026-06-09",
+      "location": "テスト",
+      "content": "テスト",
+      "is_published": true
     }
   ]
 }
