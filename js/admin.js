@@ -55,13 +55,6 @@
     box.classList.remove('hidden');
   }
 
-  function showPatStatus(text, type) {
-    const el = document.getElementById('githubPatStatus');
-    if (!el) return;
-    const color = type === 'ok' ? '#2e7d32' : type === 'error' ? '#c62828' : '#555';
-    el.innerHTML = `<span style="color:${color}">${text}</span>`;
-  }
-
   /* ============================================
      ログイン処理
      ============================================ */
@@ -135,10 +128,27 @@
         reports: data.reports.map(({ images, ...meta }) => meta),
       };
 
-      // ② 写真データ（report IDをキーとした辞書）
-      const imagesData = {};
+      // ② 既存の data-images.json をサイトから取得して「ベース」にする
+      //    （管理画面のメモリに写真がなくても既存の写真を消さないため）
+      let imagesData = {};
+      try {
+        const imgRes = await fetch(
+          'https://tokai-kojo-kenkyukai.jp/data-images.json',
+          { cache: 'no-store' }
+        );
+        if (imgRes.ok) imagesData = await imgRes.json();
+      } catch(e) {}
+
+      // ③ 今回変更・追加された記事の写真で上書き
       data.reports.forEach(r => {
-        if (r.images && r.images.length > 0) imagesData[r.id] = r.images;
+        if (Array.isArray(r.images)) {
+          if (r.images.length > 0) {
+            imagesData[r.id] = r.images;      // 追加・更新
+          } else if (r.id in imagesData) {
+            delete imagesData[r.id];           // 写真を全削除した場合
+          }
+        }
+        // r.images が undefined（読み込んでいない）→ 既存の写真を維持
       });
 
       // 両ファイルを並行してプッシュ
@@ -157,6 +167,9 @@
      データ読み書き
      ============================================ */
   let data = { news: [], reports: [] };
+
+  // 写真枚数キャッシュ { reportId: 枚数 }（一覧表示用）
+  let imagesCounts = {};
 
   // 編集中の活動報告の写真（Base64データURLの配列）
   let reportImages = [];
@@ -268,6 +281,19 @@
 
     data.news    = data.news    || [];
     data.reports = data.reports || [];
+
+    // バックグラウンドで写真枚数だけ取得（一覧表示用）
+    fetch('https://tokai-kojo-kenkyukai.jp/data-images.json', { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : {})
+      .then(imagesData => {
+        imagesCounts = {};
+        Object.keys(imagesData).forEach(id => {
+          imagesCounts[id] = (imagesData[id] || []).length;
+        });
+        renderReportAdmin(); // 枚数を反映して再描画
+      })
+      .catch(() => {});
+
     return data;
   }
 
@@ -396,7 +422,10 @@
     document.getElementById('reportFormTitle').textContent = '🏯 活動報告を編集';
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    // 写真を遅延読み込み（data-images.json から取得、なければ report 内の images を使用）
+    // 写真を読み込む間は保存ボタンを無効化（早押しによる写真消滅を防ぐ）
+    const saveBtn = document.getElementById('reportSaveBtn');
+    if (saveBtn) saveBtn.disabled = true;
+
     reportImages = [];
     renderImagePreview();
     const status = document.getElementById('reportImageStatus');
@@ -406,8 +435,11 @@
         // 旧フォーマット（data.json に images が含まれている場合）
         reportImages = item.images.slice();
       } else {
-        // 新フォーマット（data-images.json から取得）
-        const res = await fetch('data-images.json', { cache: 'no-store' });
+        // 新フォーマット（ライブサイトの data-images.json から取得）
+        const res = await fetch(
+          'https://tokai-kojo-kenkyukai.jp/data-images.json',
+          { cache: 'no-store' }
+        );
         if (res.ok) {
           const imagesData = await res.json();
           reportImages = imagesData[item.id] || [];
@@ -418,6 +450,9 @@
     }
     if (status) status.textContent = '';
     renderImagePreview();
+
+    // 読み込み完了後に保存ボタンを再度有効化
+    if (saveBtn) saveBtn.disabled = false;
   }
 
   async function saveReport() {
@@ -490,7 +525,7 @@
           <h4>${TKK.escapeHtml(item.title)}
             <span class="badge ${pub ? 'public' : 'private'}">${pub ? '公開中' : '非公開'}</span>
           </h4>
-          <div class="item-row-meta">${TKK.formatDate(item.date)}${item.location ? ' / ' + TKK.escapeHtml(item.location) : ''}${item.images && item.images.length > 0 ? ' / 📷' + item.images.length + '枚' : ''}</div>
+          <div class="item-row-meta">${TKK.formatDate(item.date)}${item.location ? ' / ' + TKK.escapeHtml(item.location) : ''}${imagesCounts[item.id] > 0 ? ' / 📷' + imagesCounts[item.id] + '枚' : ''}</div>
         </div>
         <div class="item-row-actions">
           <button class="btn btn-secondary btn-sm" data-act="toggle-report" data-id="${item.id}">${pub ? '非公開にする' : '公開する'}</button>
