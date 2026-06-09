@@ -122,33 +122,46 @@
     }
 
     try {
-      // ① 本文データ（写真なし）
+      // ① GitHubの現在のデータを取得（安全確認とベースデータのため）
+      let currentMeta   = { news: [], reports: [] };
+      let currentImages = {};
+
+      const [metaRes, imgRes] = await Promise.allSettled([
+        fetch('https://tokai-kojo-kenkyukai.jp/data.json',        { cache: 'no-store' }),
+        fetch('https://tokai-kojo-kenkyukai.jp/data-images.json', { cache: 'no-store' }),
+      ]);
+      if (metaRes.status === 'fulfilled' && metaRes.value.ok) {
+        currentMeta = await metaRes.value.json();
+      }
+      if (imgRes.status === 'fulfilled' && imgRes.value.ok) {
+        currentImages = await imgRes.value.json();
+      }
+
+      // ② 安全チェック：記事数が2件以上減っていたら中止（データ破損を防ぐ）
+      const currentCount = (currentMeta.reports || []).length;
+      const newCount = data.reports.length;
+      if (newCount < currentCount - 1) {
+        showMsg('❌ 安全のため反映を中止しました。ページを再読み込みして再度お試しください。', 'error');
+        return;
+      }
+
+      // ③ 本文データ（写真なし）
       const metaData = {
         news: data.news,
         reports: data.reports.map(({ images, ...meta }) => meta),
       };
 
-      // ② 既存の data-images.json をサイトから取得して「ベース」にする
-      //    （管理画面のメモリに写真がなくても既存の写真を消さないため）
-      let imagesData = {};
-      try {
-        const imgRes = await fetch(
-          'https://tokai-kojo-kenkyukai.jp/data-images.json',
-          { cache: 'no-store' }
-        );
-        if (imgRes.ok) imagesData = await imgRes.json();
-      } catch(e) {}
-
-      // ③ 今回変更・追加された記事の写真で上書き
+      // ④ 写真データ：GitHub上の既存写真をベースに、今回の変更分だけ上書き
+      const imagesData = { ...currentImages };
       data.reports.forEach(r => {
         if (Array.isArray(r.images)) {
           if (r.images.length > 0) {
-            imagesData[r.id] = r.images;      // 追加・更新
+            imagesData[r.id] = r.images;        // 追加・更新
           } else if (r.id in imagesData) {
-            delete imagesData[r.id];           // 写真を全削除した場合
+            delete imagesData[r.id];             // 写真を全削除した場合
           }
         }
-        // r.images が undefined（読み込んでいない）→ 既存の写真を維持
+        // r.images が undefined → 既存の写真をそのまま維持
       });
 
       // 両ファイルを並行してプッシュ
@@ -565,16 +578,28 @@
      初期化
      ============================================ */
   async function initAdmin() {
+    let loadOk = false;
     try {
       await refreshData();
+      loadOk = true;
     } catch(e) {
       console.error('データ読み込みエラー:', e);
-      data = { news: [], reports: [] };
     }
+
     clearNewsForm();
     clearReportForm();
     renderNewsAdmin();
     renderReportAdmin();
+
+    // 読み込み失敗時は保存ボタンを無効化して事故を防ぐ
+    if (!loadOk || (data.news.length === 0 && data.reports.length === 0)) {
+      showMsg('⚠️ データの読み込みに失敗しました。ページを再読み込みしてください。', 'error');
+      ['newsSaveBtn', 'reportSaveBtn'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.disabled = true;
+      });
+      return; // リスナー設定もしない
+    }
 
     /* ---- タブ ---- */
     document.querySelectorAll('.tab').forEach(t => {
