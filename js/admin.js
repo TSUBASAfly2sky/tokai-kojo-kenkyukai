@@ -279,17 +279,51 @@
     TKK.clearCache();
     localStorage.removeItem(TKK.STORAGE_KEY);
 
+    let useLocal = false;
+
+    // ① ライブサイトから取得
     try {
       const res = await fetch(LIVE_DATA_URL, { cache: 'no-store' });
       if (res.ok) {
-        data = await res.json();
+        const d = await res.json();
+        // 構造チェック：news と reports が配列でなければ不正データ
+        if (Array.isArray(d.news) && Array.isArray(d.reports)) {
+          data = d;
+        } else {
+          console.warn('ライブサイトの data.json が不正な構造です。ローカルから復旧します。');
+          useLocal = true;
+        }
+      } else {
+        useLocal = true;
       }
     } catch(e) {
-      // オフライン時はローカルの data.json にフォールバック
+      useLocal = true;
+    }
+
+    // ② ライブが不正 → ローカルの data.json + data-images.json から復旧
+    if (useLocal) {
       try {
         const res2 = await fetch('data.json', { cache: 'no-store' });
-        if (res2.ok) data = await res2.json();
+        if (res2.ok) {
+          const d2 = await res2.json();
+          if (Array.isArray(d2.news) && Array.isArray(d2.reports)) {
+            data = d2;
+          }
+        }
       } catch(e2) {}
+
+      // ローカルの写真データもマージして復旧できるようにする
+      try {
+        const imgRes = await fetch('data-images.json', { cache: 'no-store' });
+        if (imgRes.ok) {
+          const localImages = await imgRes.json();
+          (data.reports || []).forEach(r => {
+            if (!r.images || r.images.length === 0) {
+              r.images = localImages[r.id] || [];
+            }
+          });
+        }
+      } catch(e3) {}
     }
 
     data.news    = data.news    || [];
