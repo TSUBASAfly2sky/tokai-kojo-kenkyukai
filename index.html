@@ -162,6 +162,32 @@
       font-size: 0.95rem;
     }
 
+    /* X（旧Twitter）リンクボタン */
+    .btn-x {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+      margin-left: 12px;
+      padding: 11px 22px;
+      background: #000;
+      color: #fff;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .btn-x:hover {
+      background: #222;
+      transform: translateY(-2px);
+    }
+    .btn-x svg { flex-shrink: 0; }
+
+    @media (max-width: 600px) {
+      .btn-x { margin-left: 0; }
+    }
+
     .about-info-table {
       width: 100%;
       border-collapse: collapse;
@@ -425,6 +451,12 @@
           どなたでも歓迎しております。お気軽にお問い合わせください。
         </p>
         <a href="#contact" class="btn btn-primary" style="margin-top:8px;">入会・お問い合わせ</a>
+        <a href="https://x.com/Tokaikojo" target="_blank" rel="noopener" class="btn-x">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+          </svg>
+          <span>公式X（旧Twitter）</span>
+        </a>
       </div>
 
       <div>
@@ -434,7 +466,7 @@
           <tr><th>主な活動地域</th><td>愛知・岐阜・三重・静岡（東海地方全域）</td></tr>
           <tr><th>活動頻度</th><td>見学会：月一回程度（１泊２日、２泊３日の見学会もあり）<br>城郭セミナー：年１回</td></tr>
           <tr><th>会費</th><td>5,000円（未成年は半額）</td></tr>
-          <tr><th>会報・機関誌</th><td>会報：会から会員への連絡、報告を行います<br>機関誌「城」：会員の調査・研究など発表の場</td></tr>
+          <tr><th>会報・機関紙</th><td>会報：会から会員への連絡、報告を行います<br>機関紙「城」：会員の調査・研究など発表の場</td></tr>
           <tr><th>お問い合わせ</th><td>下記フォームよりご連絡ください</td></tr>
         </table>
       </div>
@@ -463,7 +495,7 @@
       </div>
       <div class="card activity-card">
         <h3>機関誌「城」発行</h3>
-        <p>機関誌「城」は、これまで２３７号が発行され、会員の研究成果、城郭情報、見学会の報告などを掲載し、随時発行されています。なお会員の投稿は無料となっています。</p>
+        <p>機関紙「城」は、これまで２３７号が発行され、会員の研究成果、城郭情報、見学会の報告などを掲載し、随時発行されています。なお会員の投稿は無料となっています。</p>
       </div>
     </div>
   </div>
