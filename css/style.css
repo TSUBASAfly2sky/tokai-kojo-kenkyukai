@@ -500,6 +500,14 @@ ul { list-style: none; }
   color: rgba(250, 247, 240, 0.55);
 }
 
+.footer-counter {
+  margin-top: 8px;
+  font-family: var(--font-jp, sans-serif);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  color: rgba(250, 247, 240, 0.4);
+}
+
 /* ========================================
    ユーティリティ
    ======================================== */

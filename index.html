@@ -586,6 +586,7 @@
   </div>
   <div class="footer-bottom">
     <p>&copy; 2026 東海古城研究会 All Rights Reserved.</p>
+    <p class="footer-counter">これまでのアクセス数：<span id="accessCounter">—</span></p>
   </div>
 </footer>
 
@@ -684,6 +685,31 @@ async function loadReportPreview() {
     grid.innerHTML = '<p style="color:var(--color-text-light); text-align:center; grid-column:1/-1;">読み込みに失敗しました</p>';
   }
 }
+
+// ===== アクセスカウンター =====
+(function() {
+  const WORKER_URL = 'https://tokai-kojo.hugtsubasa.workers.dev';
+  const el = document.getElementById('accessCounter');
+  if (!el) return;
+
+  // 同一ブラウザで30分以内の再訪はカウントせず現在値だけ表示
+  const VISIT_KEY = 'tkk_last_visit';
+  const last = parseInt(localStorage.getItem(VISIT_KEY)) || 0;
+  const isNewVisit = (Date.now() - last) > 30 * 60 * 1000;
+  const mode = isNewVisit ? 'hit' : 'peek';
+  if (isNewVisit) localStorage.setItem(VISIT_KEY, String(Date.now()));
+
+  fetch(`${WORKER_URL}/count?mode=${mode}`)
+    .then(r => r.ok ? r.json() : null)
+    .then(d => {
+      if (d && typeof d.count === 'number') {
+        el.textContent = d.count.toLocaleString('ja-JP');
+      } else {
+        el.textContent = '—';
+      }
+    })
+    .catch(() => { el.textContent = '—'; });
+})();
 
 // ===== 初期化 =====
 loadNews();
