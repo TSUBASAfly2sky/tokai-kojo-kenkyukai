@@ -15,13 +15,64 @@ export default {
   async fetch(request, env) {
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
     };
 
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders });
     }
+
+    const url = new URL(request.url);
+
+    /* ============================================
+       アクセスカウンター（GET /count）
+       KVネームスペース COUNTER に保存
+       ?mode=hit  … カウントを+1して返す（初回訪問者用）
+       ?mode=peek … カウントせず現在値だけ返す
+       ============================================ */
+    if (request.method === 'GET' && url.pathname === '/count') {
+      if (!env.COUNTER) {
+        return json({ error: 'COUNTER KVが未設定です' }, 500, corsHeaders);
+      }
+      const mode = url.searchParams.get('mode') || 'hit';
+      let count = parseInt(await env.COUNTER.get('total')) || 0;
+      if (mode === 'hit') {
+        count += 1;
+        await env.COUNTER.put('total', String(count));
+      }
+      return json({ count }, 200, corsHeaders);
+    }
+
+    /* ============================================
+       GitHubから最新データを直接読む（GET /read?file=data.json）
+       GitHub Pages/CDNの反映遅延・キャッシュの影響を受けず、
+       プッシュ直後の最新内容を返す（管理画面用）。
+       ============================================ */
+    if (request.method === 'GET' && url.pathname === '/read') {
+      const file = url.searchParams.get('file') || 'data.json';
+      if (!ALLOWED_FILES.includes(file)) {
+        return json({ error: '不正なファイル名です' }, 400, corsHeaders);
+      }
+      const apiUrl = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${file}?ref=${GH_BRANCH}`;
+      const ghRes = await fetch(apiUrl, {
+        headers: {
+          'Authorization': `token ${env.GH_PAT}`,
+          'Accept': 'application/vnd.github.raw',
+          'User-Agent': 'tokai-kojo-worker',
+        },
+      });
+      if (!ghRes.ok) {
+        if (ghRes.status === 404) return json({}, 200, corsHeaders); // 未作成→空
+        return json({ error: 'GitHub読み取り失敗: ' + ghRes.status }, 500, corsHeaders);
+      }
+      const text = await ghRes.text();
+      return new Response(text, {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     if (request.method !== 'POST') {
       return new Response('Method not allowed', { status: 405, headers: corsHeaders });
     }
