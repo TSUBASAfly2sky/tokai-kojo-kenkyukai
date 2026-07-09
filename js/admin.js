@@ -127,8 +127,8 @@
       let currentImages = {};
 
       const [metaRes, imgRes] = await Promise.allSettled([
-        fetch('https://tokai-kojo-kenkyukai.jp/data.json',        { cache: 'no-store' }),
-        fetch('https://tokai-kojo-kenkyukai.jp/data-images.json', { cache: 'no-store' }),
+        fetch(WORKER_URL + '/read?file=data.json',        { cache: 'no-store' }),
+        fetch(WORKER_URL + '/read?file=data-images.json', { cache: 'no-store' }),
       ]);
       if (metaRes.status === 'fulfilled' && metaRes.value.ok) {
         currentMeta = await metaRes.value.json();
@@ -272,36 +272,49 @@
     `).join('');
   }
 
-  // 管理画面は常に公開サイトから最新データを取得する
+  // 管理画面は Worker 経由で GitHub から最新データを取得する
+  // （GitHub Pages / CDN の反映遅延・キャッシュの影響を受けない）
+  const READ_DATA_URL   = WORKER_URL + '/read?file=data.json';
+  const READ_IMAGES_URL = WORKER_URL + '/read?file=data-images.json';
+  // フォールバック用（Worker障害時）
   const LIVE_DATA_URL = 'https://tokai-kojo-kenkyukai.jp/data.json';
 
   async function refreshData() {
     TKK.clearCache();
     localStorage.removeItem(TKK.STORAGE_KEY);
 
-    let useLocal = false;
+    let loaded = false;
 
-    // ① ライブサイトから取得
+    // ① Worker 経由で GitHub の最新 data.json を取得（反映遅延なし）
     try {
-      const res = await fetch(LIVE_DATA_URL, { cache: 'no-store' });
+      const res = await fetch(READ_DATA_URL, { cache: 'no-store' });
       if (res.ok) {
         const d = await res.json();
-        // 構造チェック：news と reports が配列でなければ不正データ
         if (Array.isArray(d.news) && Array.isArray(d.reports)) {
           data = d;
-        } else {
-          console.warn('ライブサイトの data.json が不正な構造です。ローカルから復旧します。');
-          useLocal = true;
+          loaded = true;
         }
-      } else {
-        useLocal = true;
       }
     } catch(e) {
-      useLocal = true;
+      console.warn('Worker経由の読み取りに失敗しました', e);
     }
 
-    // ② ライブが不正 → ローカルの data.json + data-images.json から復旧
-    if (useLocal) {
+    // ② Worker が使えない場合はライブサイトから取得（フォールバック）
+    if (!loaded) {
+      try {
+        const res = await fetch(LIVE_DATA_URL, { cache: 'no-store' });
+        if (res.ok) {
+          const d = await res.json();
+          if (Array.isArray(d.news) && Array.isArray(d.reports)) {
+            data = d;
+            loaded = true;
+          }
+        }
+      } catch(e) {}
+    }
+
+    // ③ それも失敗 → ローカルファイルから復旧
+    if (!loaded) {
       try {
         const res2 = await fetch('data.json', { cache: 'no-store' });
         if (res2.ok) {
@@ -311,30 +324,17 @@
           }
         }
       } catch(e2) {}
-
-      // ローカルの写真データもマージして復旧できるようにする
-      try {
-        const imgRes = await fetch('data-images.json', { cache: 'no-store' });
-        if (imgRes.ok) {
-          const localImages = await imgRes.json();
-          (data.reports || []).forEach(r => {
-            if (!r.images || r.images.length === 0) {
-              r.images = localImages[r.id] || [];
-            }
-          });
-        }
-      } catch(e3) {}
     }
 
     data.news    = data.news    || [];
     data.reports = data.reports || [];
 
     // バックグラウンドで写真枚数だけ取得（一覧表示用）
-    fetch('https://tokai-kojo-kenkyukai.jp/data-images.json', { cache: 'no-store' })
+    fetch(READ_IMAGES_URL, { cache: 'no-store' })
       .then(r => r.ok ? r.json() : {})
       .then(imagesData => {
         imagesCounts = {};
-        Object.keys(imagesData).forEach(id => {
+        Object.keys(imagesData || {}).forEach(id => {
           imagesCounts[id] = (imagesData[id] || []).length;
         });
         renderReportAdmin(); // 枚数を反映して再描画
@@ -482,14 +482,14 @@
         // 旧フォーマット（data.json に images が含まれている場合）
         reportImages = item.images.slice();
       } else {
-        // 新フォーマット（ライブサイトの data-images.json から取得）
+        // 新フォーマット（Worker経由でGitHubの data-images.json から取得）
         const res = await fetch(
-          'https://tokai-kojo-kenkyukai.jp/data-images.json',
+          WORKER_URL + '/read?file=data-images.json',
           { cache: 'no-store' }
         );
         if (res.ok) {
           const imagesData = await res.json();
-          reportImages = imagesData[item.id] || [];
+          reportImages = (imagesData && imagesData[item.id]) || [];
         }
       }
     } catch(e) {
